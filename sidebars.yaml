@@ -1,0 +1,13 @@
+training:
+  - page: reference/index.md
+  - group: Guides or Stuff
+    expanded: true
+    pages:
+      - label: Rate Limits
+        page: reference/rate-limits.md
+      - label: Okta Expression Language
+        page: reference/okta-expression-language.md
+  - group: API Reference
+    expanded: true
+    pages:
+      - page: openapi/reference.page.yaml/*
