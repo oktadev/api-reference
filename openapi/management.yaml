@@ -1,4 +1,4 @@
-openapi: 3.0.2
+openapi: 3.0.3
 info:
   title: Okta API
   description: Allows customers to easily access the Okta API
@@ -37,10 +37,11 @@ servers:
         default: auth.your-custom-domain.com
         description: The custom domain configured for your organization
 tags:
+  - name: ApiToken
   - name: Application
   - name: Authenticator
   - name: AuthorizationServer
-  - name: Brand
+  - name: Customization
   - name: CAPTCHA
     description:
       $ref: ./test.md
@@ -76,6 +77,7 @@ x-tagGroups:
       - ProfileMapping
   - name: Authentication
     tags:
+      - ApiToken
       - Application
       - Authenticator
       - AuthorizationServer
@@ -89,7 +91,7 @@ x-tagGroups:
       - NetworkZone
   - name: Customization
     tags:
-      - Brand
+      - Customization
       - Domain
       - Template
   - name: Other
@@ -101,6 +103,160 @@ x-tagGroups:
       - SystemLog
       - Subscription
 paths:
+  /api/v1/api-tokens:
+    get:
+      summary: List API Token Metadata
+      description: Enumerates the metadata of the active API tokens in your organization.
+      operationId: listApiTokens
+      parameters:
+        - $ref: '#/components/parameters/queryAfter'
+        - $ref: '#/components/parameters/queryLimit'
+        - name: q
+          in: query
+          description: Finds a token that matches the name, clientName, or status.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ApiToken'
+              examples:
+                List Tokens:
+                  $ref: '#/components/examples/ApiTokenListMetadataResponse'
+      security:
+        - api_token: []
+        - oauth2:
+            - okta.apiTokens.read
+      tags:
+        - ApiToken
+    post:
+      summary: Create a new API Token
+      description: Creates a new API token for the current user, or the specified userId if provided. Requires org administration permissions to create tokens on behalf of other users.
+      operationId: createApiToken
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiToken'
+            examples:
+              Create an API Token for Self:
+                $ref: '#/components/examples/ApiTokenSelfRequest'
+              Create an API Token for a Specific User:
+                $ref: '#/components/examples/ApiTokenRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiToken'
+              examples:
+                HCaptcha:
+                  $ref: '#/components/examples/ApiTokenCreateResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - api_token: []
+        - oauth2:
+            - okta.apiTokens.manage
+      tags:
+        - ApiToken
+  /api/v1/api-tokens/current:
+    delete:
+      summary: Revoke the Current API Token
+      description: Revokes the API token provided in the Authorization header.
+      operationId: revokeCurrentApiToken
+      responses:
+        '204':
+          description: No Content
+        '403':
+          description: Forbidden
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - api_token: []
+      tags:
+        - ApiToken
+  /api/v1/api-tokens/{apiTokenId}:
+    parameters:
+      - $ref: '#/components/parameters/pathApiTokenId'
+    get:
+      summary: Get the Metadata for an API Token
+      description: Get the metadata for an active API token by id.
+      operationId: getApiToken
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiToken'
+              examples:
+                HCaptcha:
+                  $ref: '#/components/examples/ApiTokenMetadataResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                Resource Not Found:
+                  $ref: '#/components/examples/ErrorResourceNotFound'
+      security:
+        - api_token: []
+        - oauth2:
+            - okta.apiTokens.read
+      tags:
+        - ApiToken
+    delete:
+      summary: Revoke an API Token
+      description: Revoke an API token by id.
+      operationId: revokeApiToken
+      responses:
+        '204':
+          description: No Content
+        '403':
+          description: Forbidden
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                Resource Not Found:
+                  $ref: '#/components/examples/ErrorResourceNotFound'
+      security:
+        - api_token: []
+        - oauth2:
+            - okta.apiTokens.manage
+      tags:
+        - ApiToken
   /api/v1/apps:
     get:
       summary: List Applications
@@ -2660,7 +2816,7 @@ paths:
         - oauth2:
             - okta.brands.read
       tags:
-        - Brand
+        - Customization
   /api/v1/brands/{brandId}:
     parameters:
       - in: path
@@ -2690,7 +2846,7 @@ paths:
         - oauth2:
             - okta.brands.read
       tags:
-        - Brand
+        - Customization
     put:
       summary: Update Brand
       description: Updates a brand by `brandId`
@@ -2720,7 +2876,7 @@ paths:
         - oauth2:
             - okta.brands.manage
       tags:
-        - Brand
+        - Customization
   /api/v1/brands/{brandId}/templates/email:
     parameters:
       - $ref: '#/components/parameters/pathBrandId'
@@ -2753,7 +2909,7 @@ paths:
         - oauth2:
             - okta.templates.read
       tags:
-        - Brand
+        - Customization
   /api/v1/brands/{brandId}/templates/email/{templateName}:
     parameters:
       - $ref: '#/components/parameters/pathBrandId'
@@ -2777,7 +2933,7 @@ paths:
         - oauth2:
             - okta.templates.read
       tags:
-        - Brand
+        - Customization
   /api/v1/brands/{brandId}/templates/email/{templateName}/customizations:
     parameters:
       - $ref: '#/components/parameters/pathBrandId'
@@ -2806,7 +2962,7 @@ paths:
         - oauth2:
             - okta.templates.read
       tags:
-        - Brand
+        - Customization
     post:
       summary: Create Email Customization
       description: Creates a new email customization.
@@ -2846,7 +3002,7 @@ paths:
         - oauth2:
             - okta.templates.manage
       tags:
-        - Brand
+        - Customization
     delete:
       summary: Delete All Email Customizations
       description: Deletes all customizations for an email template.
@@ -2860,7 +3016,7 @@ paths:
         - oauth2:
             - okta.templates.manage
       tags:
-        - Brand
+        - Customization
   /api/v1/brands/{brandId}/templates/email/{templateName}/customizations/{customizationId}:
     parameters:
       - $ref: '#/components/parameters/pathBrandId'
@@ -2885,7 +3041,7 @@ paths:
         - oauth2:
             - okta.templates.read
       tags:
-        - Brand
+        - Customization
     put:
       summary: Update Email Customization
       description: Updates an existing email customization using the property values provided.
@@ -2928,7 +3084,7 @@ paths:
         - oauth2:
             - okta.templates.manage
       tags:
-        - Brand
+        - Customization
     delete:
       summary: Delete Email Customization
       description: Deletes an email customization by its unique identifier.
@@ -2951,7 +3107,7 @@ paths:
         - oauth2:
             - okta.templates.manage
       tags:
-        - Brand
+        - Customization
   /api/v1/brands/{brandId}/templates/email/{templateName}/customizations/{customizationId}/preview:
     parameters:
       - $ref: '#/components/parameters/pathBrandId'
@@ -2976,7 +3132,7 @@ paths:
         - oauth2:
             - okta.templates.read
       tags:
-        - Brand
+        - Customization
   /api/v1/brands/{brandId}/templates/email/{templateName}/default-content:
     parameters:
       - $ref: '#/components/parameters/pathBrandId'
@@ -3002,7 +3158,7 @@ paths:
         - oauth2:
             - okta.templates.read
       tags:
-        - Brand
+        - Customization
   /api/v1/brands/{brandId}/templates/email/{templateName}/default-content/preview:
     parameters:
       - $ref: '#/components/parameters/pathBrandId'
@@ -3028,7 +3184,7 @@ paths:
         - oauth2:
             - okta.templates.read
       tags:
-        - Brand
+        - Customization
   /api/v1/brands/{brandId}/templates/email/{templateName}/test:
     parameters:
       - $ref: '#/components/parameters/pathBrandId'
@@ -3052,7 +3208,7 @@ paths:
         - oauth2:
             - okta.templates.read
       tags:
-        - Brand
+        - Customization
   /api/v1/brands/{brandId}/themes:
     parameters:
       - in: path
@@ -3078,7 +3234,7 @@ paths:
         - oauth2:
             - okta.brands.read
       tags:
-        - Brand
+        - Customization
   /api/v1/brands/{brandId}/themes/{themeId}:
     parameters:
       - in: path
@@ -3107,7 +3263,7 @@ paths:
         - oauth2:
             - okta.brands.read
       tags:
-        - Brand
+        - Customization
     put:
       summary: Update a theme for a brand
       description: Updates a theme for a brand
@@ -3143,7 +3299,7 @@ paths:
         - oauth2:
             - okta.brands.manage
       tags:
-        - Brand
+        - Customization
   /api/v1/brands/{brandId}/themes/{themeId}/background-image:
     parameters:
       - in: path
@@ -3191,7 +3347,7 @@ paths:
         - oauth2:
             - okta.brands.manage
       tags:
-        - Brand
+        - Customization
     delete:
       summary: Deletes a Theme background image
       description: Deletes a Theme background image
@@ -3211,7 +3367,7 @@ paths:
         - oauth2:
             - okta.brands.manage
       tags:
-        - Brand
+        - Customization
   /api/v1/brands/{brandId}/themes/{themeId}/favicon:
     parameters:
       - in: path
@@ -3259,7 +3415,7 @@ paths:
         - oauth2:
             - okta.brands.manage
       tags:
-        - Brand
+        - Customization
     delete:
       summary: Deletes a Theme favicon. The org then uses the Okta default favicon.
       description: Deletes a Theme favicon. The org then uses the Okta default favicon.
@@ -3279,7 +3435,7 @@ paths:
         - oauth2:
             - okta.brands.manage
       tags:
-        - Brand
+        - Customization
   /api/v1/brands/{brandId}/themes/{themeId}/logo:
     parameters:
       - in: path
@@ -3327,7 +3483,7 @@ paths:
         - oauth2:
             - okta.brands.manage
       tags:
-        - Brand
+        - Customization
     delete:
       summary: Deletes a Theme logo. The org then uses the Okta default logo.
       description: Deletes a Theme logo. The org then uses the Okta default logo.
@@ -3347,7 +3503,7 @@ paths:
         - oauth2:
             - okta.brands.manage
       tags:
-        - Brand
+        - Customization
   /api/v1/captchas:
     get:
       summary: List CAPTCHA instances
@@ -9885,6 +10041,8 @@ components:
           authorizationUrl: /oauth2/v1/authorize
           tokenUrl: /oauth2/v1/token
           scopes:
+            okta.apiToken.read: Read API Tokens.
+            okta.apiToken.manage: Read or modify API Tokens.
             okta.apps.read: Read Apps.
             okta.apps.manage: Read or modify Apps.
             okta.authenticators.read: Read Authenticators.
@@ -9929,6 +10087,477 @@ components:
             okta.trustedOrigins.manage: Read or modify Trusted Origins.
             okta.users.read.self: Read Users.
             okta.users.read: Read Users.
+  examples:
+    ApiTokenCreateResponse:
+      value:
+        name: My API Token
+        userId: 00uXXXXXXXXXXXXXXXXX
+        tokenRollingLifetimeMinutes: 43200
+        id: 00Tabcdefg1234567890
+        clientName: Okta API
+        token: 00abcdefAF3xOL0O4ey58Xp0bGCqSnz1GCow612345
+        status: ACTIVE
+        expiresAt: 2021-12-11T20:38:10.000Z
+        created: 2021-11-09T20:38:10.000Z
+        lastUpdated: 2021-11-11T20:38:10.000Z
+        _links:
+          self:
+            href: https://${yourOktaDomain}/api/v1/api-tokens/00Tabcdefg1234567890
+            hints:
+              allow:
+                - GET
+                - DELETE
+          user:
+            href: https://${yourOktaDomain}/api/v1/users/00uXXXXXXXXXXXXXXXXX
+            hints:
+              allow:
+                - GET
+    ApiTokenListMetadataResponse:
+      value:
+        - name: My API Token
+          userId: 00uabcdefg1234567890
+          tokenRollingLifetimeMinutes: 43200
+          id: 00Tabcdefg1234567890
+          clientName: Okta API
+          status: ACTIVE
+          expiresAt: 2021-12-11T20:38:10.000Z
+          created: 2021-11-09T20:38:10.000Z
+          lastUpdated: 2021-11-11T20:38:10.000Z
+          _links:
+            self:
+              href: https://${yourOktaDomain}/api/v1/api-tokens/00Tabcdefg1234567890
+              hints:
+                allow:
+                  - GET
+                  - DELETE
+            user:
+              href: https://${yourOktaDomain}/api/v1/users/00uabcdefg1234567890
+              hints:
+                allow:
+                  - GET
+        - name: Another API Token
+          userId: 00uabcdefg1234567890
+          tokenRollingLifetimeMinutes: 5
+          id: 00T1234567890abcdefg
+          clientName: Okta API
+          status: ACTIVE
+          expiresAt: 2021-11-11T20:43:10.000Z
+          created: 2021-11-09T20:38:10.000Z
+          lastUpdated: 2021-11-11T20:38:10.000Z
+          _links:
+            self:
+              href: https://${yourOktaDomain}/api/v1/api-tokens/00T1234567890abcdefg
+              hints:
+                allow:
+                  - GET
+                  - DELETE
+            user:
+              href: https://${yourOktaDomain}/api/v1/users/00uabcdefg1234567890
+              hints:
+                allow:
+                  - GET
+    ApiTokenMetadataResponse:
+      value:
+        name: My API Token
+        userId: 00uXXXXXXXXXXXXXXXXX
+        tokenRollingLifetimeMinutes: 43200
+        id: 00Tabcdefg1234567890
+        clientName: Okta API
+        status: ACTIVE
+        expiresAt: 2021-12-11T20:38:10.000Z
+        created: 2021-11-09T20:38:10.000Z
+        lastUpdated: 2021-11-11T20:38:10.000Z
+        _links:
+          self:
+            href: https://${yourOktaDomain}/api/v1/api-tokens/00Tabcdefg1234567890
+            hints:
+              allow:
+                - GET
+                - DELETE
+          user:
+            href: https://${yourOktaDomain}/api/v1/users/00uXXXXXXXXXXXXXXXXX
+            hints:
+              allow:
+                - GET
+    ApiTokenRequest:
+      value:
+        name: Another User's API Token
+        userId: 00uabcdefg1234567890
+        tokenRollingLifetimeMinutes: 5
+    ApiTokenSelfRequest:
+      value:
+        name: myHCaptcha
+    CAPTCHAInstanceRequestHCaptcha:
+      value:
+        name: myHCaptcha
+        secretKey: xxxxxxxxxxx
+        siteKey: xxxxxxxxxxx
+        type: HCAPTCHA
+    CAPTCHAInstanceRequestReCaptcha:
+      value:
+        name: myReCaptcha
+        secretKey: xxxxxxxxxxx
+        siteKey: yyyyyyyyyyyyyyy
+        type: RECAPTCHA_V2
+    CAPTCHAInstanceResponseHCaptcha:
+      value:
+        id: abcd1234
+        name: myHCaptcha
+        siteKey: xxxxxxxxxxx
+        type: HCAPTCHA
+        _link:
+          self:
+            href: https://your-subdomain.okta.com/api/v1/captchas/abcd1234
+            hints:
+              allow:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+    CAPTCHAInstanceResponseReCaptcha:
+      value:
+        id: abcd4567
+        name: myReCaptcha
+        siteKey: yyyyyyyyyyyyyyy
+        type: RECAPTCHA_V2
+        _link:
+          self:
+            href: https://your-subdomain.okta.com/api/v1/captchas/abcd4567
+            hints:
+              allow:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+    CreateUpdateEmailCustomizationRequest:
+      value:
+        language: fr
+        subject: Bienvenue dans ${org.name}!
+        body: <!DOCTYPE html><html><body><p>Bonjour ${user.profile.firstName}. <a href="${activationLink}">Activer le compte</a></p></body></html>
+        isDefault: false
+    CreateUpdateEmailCustomizationResponse:
+      value:
+        language: fr
+        subject: Bienvenue dans ${org.name}!
+        body: <!DOCTYPE html><html><body><p>Bonjour ${user.profile.firstName}. <a href="${activationLink}">Activer le compte</a></p></body></html>
+        isDefault: false
+        id: oel11u6DqUiMbQkpl0g4
+        created: 2021-11-09T20:38:10.000Z
+        lastUpdated: 2021-11-11T20:38:10.000Z
+        _links:
+          self:
+            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation/customizations/oel11u6DqUiMbQkpl0g4
+            hints:
+              allow:
+                - GET
+                - PUT
+                - DELETE
+          template:
+            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation
+            hints:
+              allow:
+                - GET
+          preview:
+            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation/customizations/oel11u6DqUiMbQkpl0g4/preview
+            hints:
+              allow:
+                - GET
+          test:
+            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation/test
+            hints:
+              allow:
+                - POST
+    EmailCustomizationResponse:
+      value:
+        language: en
+        isDefault: true
+        subject: Welcome to ${org.name}!
+        body: <!DOCTYPE html><html><body><p>Hello, ${user.profile.firstName}. Click <a href="${activationLink}">here</a> to activate your account.</body></html>
+        id: oel11u6DqUiMbQkpl0g4
+        created: 2021-11-09T20:38:10.000Z
+        lastUpdated: 2021-11-11T20:38:10.000Z
+        _links:
+          self:
+            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation/customizations/oel11u6DqUiMbQkpl0g4
+            hints:
+              allow:
+                - GET
+                - PUT
+                - DELETE
+          template:
+            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation
+            hints:
+              allow:
+                - GET
+          preview:
+            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation/customizations/oel11u6DqUiMbQkpl0g4/preview
+            hints:
+              allow:
+                - GET
+          test:
+            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation/test
+            hints:
+              allow:
+                - POST
+    EmailTemplateDefaultContentResponse:
+      value:
+        subject: Welcome to ${org.name}!
+        body: <!DOCTYPE html><html><body><p>Hello, ${user.profile.firstName}. Click <a href="${activationLink}">here</a> to activate your account.</body></html>
+        _links:
+          self:
+            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation/default-content
+            hints:
+              allow:
+                - GET
+          template:
+            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation
+            hints:
+              allow:
+                - GET
+          preview:
+            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation/default-content/preview
+            hints:
+              allow:
+                - GET
+    ErrorApiValidationFailed:
+      value:
+        errorCode: E0000001
+        errorSummary: 'Api validation failed: {0}'
+        errorLink: E0000001
+        errorId: sampleiCF-8D5rLW6myqiPItW
+        errorCauses: []
+    ErrorCAPTCHALimitOfOne:
+      value:
+        errorCode: E0000165
+        errorSummary: CAPTCHA count limit reached. At most one CAPTCHA instance is allowed per Org.
+        errorLink: E0000165
+        errorId: oaejrB1fWL1S7mc-2KcG-SOtw
+        errorCauses: []
+    ErrorCAPTCHAOrgWideSetting:
+      value:
+        errorCode: E0000149
+        errorSummary: Current CAPTCHA is associated with org-wide settings, cannot be removed.
+        errorLink: E0000149
+        errorId: samplezsusshPdiTWiITwqBt8
+        errorCauses: []
+    ErrorEmailCustomizationCannotClearDefault:
+      value:
+        errorCode: E0000185
+        errorSummary: The isDefault parameter of the default email template customization can't be set to false.
+        errorLink: E0000185
+        errorId: oaejrB1fWL1S7mc-2KcG-SOtw
+        errorCauses: []
+    ErrorEmailCustomizationCannotDeleteDefault:
+      value:
+        errorCode: E0000184
+        errorSummary: A default email template customization can't be deleted.
+        errorLink: E0000184
+        errorId: oaeAdRqprFuTyKokyYPbURJkA
+        errorCauses: []
+    ErrorEmailCustomizationDefaultAlreadyExists:
+      value:
+        errorCode: E0000182
+        errorSummary: A default email template customization already exists.
+        errorLink: E0000182
+        errorId: oaeXYwTiMvASsC3O4HCzjFaCA
+        errorCauses: []
+    ErrorEmailCustomizationLanguageAlreadyExists:
+      value:
+        errorCode: E0000183
+        errorSummary: An email template customization for that language already exists.
+        errorLink: E0000183
+        errorId: oaeUcGELffqRay0u1OPdnPypw
+        errorCauses: []
+    ErrorResourceNotFound:
+      value:
+        errorCode: E0000007
+        errorSummary: 'Not found: {0}'
+        errorLink: E0000007
+        errorId: sampleMlLvGUj_YD5v16vkYWY
+        errorCauses: []
+    GetEmailTemplateResponse:
+      value:
+        name: UserActivation
+        _links:
+          self:
+            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation
+            hints:
+              allow:
+                - GET
+          defaultContent:
+            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation/default-content
+            hints:
+              allow:
+                - GET
+          customizations:
+            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation/customizations
+            hints:
+              allow:
+                - GET
+                - POST
+                - DELETE
+          test:
+            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation/test
+            hints:
+              allow:
+                - POST
+    ListEmailCustomizationResponse:
+      value:
+        - language: en
+          isDefault: true
+          subject: Welcome to ${org.name}!
+          body: <!DOCTYPE html><html><body><p>Hello, ${user.profile.firstName}. Click <a href="${activationLink}">here</a> to activate your account.</body></html>
+          id: oel11u6DqUiMbQkpl0g4
+          created: 2021-11-09T20:38:10.000Z
+          lastUpdated: 2021-11-11T20:38:10.000Z
+          _links:
+            self:
+              href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation/customizations/oel11u6DqUiMbQkpl0g4
+              hints:
+                allow:
+                  - GET
+                  - PUT
+                  - DELETE
+            template:
+              href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation
+              hints:
+                allow:
+                  - GET
+            preview:
+              href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation/customizations/oel11u6DqUiMbQkpl0g4/preview
+              hints:
+                allow:
+                  - GET
+            test:
+              href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation/test
+              hints:
+                allow:
+                  - POST
+    ListEmailTemplateResponse:
+      value:
+        - name: UserActivation
+          _links:
+            self:
+              href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation
+              hints:
+                allow:
+                  - GET
+            defaultContent:
+              href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation/default-content
+              hints:
+                allow:
+                  - GET
+            customizations:
+              href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation/customizations
+              hints:
+                allow:
+                  - GET
+                  - POST
+                  - DELETE
+            test:
+              href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation/test
+              hints:
+                allow:
+                  - POST
+    PreviewEmailCustomizationResponse:
+      value:
+        subject: Welcome to Okta!
+        body: <!DOCTYPE html><html><body><p>Hello, John. Click <a href="https://${yourOktaDomain}/...">here</a> to activate your account.</body></html>
+        _links:
+          self:
+            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation/customizations/oel2kk1zYJBJbeaGo0g4/preview
+            hints:
+              allow:
+                - GET
+          template:
+            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation
+            hints:
+              allow:
+                - GET
+          test:
+            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation/test
+            hints:
+              allow:
+                - POST
+    PreviewEmailTemplateDefaultContentResponse:
+      value:
+        subject: Welcome to Okta!
+        body: <!DOCTYPE html><html><body><p>Hello, John. Click <a href="https://${yourOktaDomain}/...">here</a> to activate your account.</body></html>
+        _links:
+          self:
+            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation/default-content/preview
+            hints:
+              allow:
+                - GET
+          template:
+            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation
+            hints:
+              allow:
+                - GET
+          defaultContent:
+            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/UserActivation/test/default-content
+            hints:
+              allow:
+                - POST
+  parameters:
+    pathApiTokenId:
+      name: apiTokenId
+      in: path
+      schema:
+        type: string
+        example: 00Tabcdefg1234567890
+      required: true
+      description: id of the API Token
+    pathBrandId:
+      name: brandId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the brand.
+    pathCaptchaId:
+      name: captchaId
+      in: path
+      schema:
+        type: string
+        example: abcd1234
+      required: true
+      description: id of the CAPTCHA
+    pathCustomizationId:
+      name: customizationId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the email customization.
+    pathTemplateName:
+      name: templateName
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The name of the email template.
+    queryAfter:
+      name: after
+      in: query
+      schema:
+        type: string
+      description: The cursor to use for pagination. It is an opaque string that specifies your current location in the list and is obtained from the `Link` response header. See [Pagination](https://developer.okta.com/docs/reference/core-okta-api/#pagination) for more information.
+    queryLanguage:
+      name: language
+      schema:
+        $ref: '#/components/schemas/Language'
+      in: query
+      description: The language to use for the email. Defaults to the current user's language if unspecified.
+    queryLimit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 20
+      description: A limit on the number of objects to return.
   schemas:
     AccessPolicy:
       allOf:
@@ -10020,6 +10649,60 @@ components:
         - sso
         - any
         - none
+    ApiToken:
+      title: API Token
+      description: An API token for an Okta User. This token is NOT scoped any further and can be used for any API the user has permissions to call.
+      type: object
+      properties:
+        name:
+          type: string
+        tokenRollingLifetimeMinutes:
+          type: integer
+          minimum: 5
+          maximum: 129600
+          default: 43200
+        userId:
+          type: string
+        id:
+          type: string
+          readOnly: true
+        clientName:
+          type: string
+          readOnly: true
+        token:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+            - $ref: '#/components/schemas/ApiTokenStatus'
+            - readOnly: true
+        expiresAt:
+          type: string
+          format: date-time
+          readOnly: true
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        lastUpdated:
+          type: string
+          format: date-time
+          readOnly: true
+        _link:
+          type: object
+          properties:
+            self:
+              $ref: '#/components/schemas/HrefObject'
+          readOnly: true
+      required:
+        - name
+    ApiTokenStatus:
+      type: string
+      enum:
+        - ACTIVE
+        - STALE
+        - SUSPICIOUS
+        - EXPIRING
     AppAndInstanceConditionEvaluatorAppOrInstance:
       type: object
       properties:
@@ -11995,6 +12678,21 @@ components:
             type: string
         provider:
           $ref: '#/components/schemas/IdentityProviderPolicyProvider'
+    IdpPolicyRuleAction:
+      properties:
+        providers:
+          items:
+            $ref: '#/components/schemas/IdpPolicyRuleActionProvider'
+          type: array
+      type: object
+    IdpPolicyRuleActionProvider:
+      properties:
+        id:
+          readOnly: true
+          type: string
+        type:
+          type: string
+      type: object
     ImageUploadResponse:
       type: object
       properties:
@@ -12185,8 +12883,8 @@ components:
       allOf:
         - $ref: '#/components/schemas/AccessPolicyConstraint'
     Language:
-      type: string
       description: The language specified as an [IETF BCP 47 language tag](https://datatracker.ietf.org/doc/html/rfc5646).
+      type: string
     LifecycleCreateSettingObject:
       type: object
       properties:
@@ -13699,6 +14397,8 @@ components:
       properties:
         enroll:
           $ref: '#/components/schemas/PolicyRuleActionsEnroll'
+        idp:
+          $ref: '#/components/schemas/IdpPolicyRuleAction'
         signon:
           $ref: '#/components/schemas/OktaSignOnPolicyRuleSignonActions'
         passwordChange:
@@ -15667,367 +16367,3 @@ components:
               type: boolean
             wReplyURL:
               type: string
-  examples:
-    CAPTCHAInstanceRequestHCaptcha:
-      value:
-        name: myHCaptcha
-        secretKey: xxxxxxxxxxx
-        siteKey: xxxxxxxxxxx
-        type: HCAPTCHA
-    CAPTCHAInstanceRequestReCaptcha:
-      value:
-        name: myReCaptcha
-        secretKey: xxxxxxxxxxx
-        siteKey: yyyyyyyyyyyyyyy
-        type: RECAPTCHA_V2
-    CAPTCHAInstanceResponseHCaptcha:
-      value:
-        id: abcd1234
-        name: myHCaptcha
-        siteKey: xxxxxxxxxxx
-        type: HCAPTCHA
-        _link:
-          self:
-            href: https://your-subdomain.okta.com/api/v1/captchas/abcd1234
-            hints:
-              allow:
-                - GET
-                - POST
-                - PUT
-                - DELETE
-    CAPTCHAInstanceResponseReCaptcha:
-      value:
-        id: abcd4567
-        name: myReCaptcha
-        siteKey: yyyyyyyyyyyyyyy
-        type: RECAPTCHA_V2
-        _link:
-          self:
-            href: https://your-subdomain.okta.com/api/v1/captchas/abcd4567
-            hints:
-              allow:
-                - GET
-                - POST
-                - PUT
-                - DELETE
-    CreateUpdateEmailCustomizationRequest:
-      value:
-        language: fr
-        subject: Bienvenue dans ${org.name}!
-        body: <!DOCTYPE html><html><body><p>Bonjour ${user.profile.firstName}. <a href="${activationLink}">Activer le compte</a></p></body></html>
-        isDefault: false
-    CreateUpdateEmailCustomizationResponse:
-      value:
-        language: fr
-        subject: Bienvenue dans ${org.name}!
-        body: <!DOCTYPE html><html><body><p>Bonjour ${user.profile.firstName}. <a href="${activationLink}">Activer le compte</a></p></body></html>
-        isDefault: false
-        id: oel11u6DqUiMbQkpl0g4
-        created: 2021-11-09T20:38:10.000Z
-        lastUpdated: 2021-11-11T20:38:10.000Z
-        _links:
-          self:
-            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome/customizations/oel11u6DqUiMbQkpl0g4
-            hints:
-              allow:
-                - GET
-                - PUT
-                - DELETE
-          template:
-            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome
-            hints:
-              allow:
-                - GET
-          preview:
-            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome/customizations/oel11u6DqUiMbQkpl0g4/preview
-            hints:
-              allow:
-                - GET
-          test:
-            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome/test
-            hints:
-              allow:
-                - POST
-    EmailCustomizationResponse:
-      value:
-        language: en
-        isDefault: true
-        subject: Welcome to ${org.name}!
-        body: <!DOCTYPE html><html><body><p>Hello, ${user.profile.firstName}. Click <a href="${activationLink}">here</a> to activate your account.</body></html>
-        id: oel11u6DqUiMbQkpl0g4
-        created: 2021-11-09T20:38:10.000Z
-        lastUpdated: 2021-11-11T20:38:10.000Z
-        _links:
-          self:
-            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome/customizations/oel11u6DqUiMbQkpl0g4
-            hints:
-              allow:
-                - GET
-                - PUT
-                - DELETE
-          template:
-            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome
-            hints:
-              allow:
-                - GET
-          preview:
-            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome/customizations/oel11u6DqUiMbQkpl0g4/preview
-            hints:
-              allow:
-                - GET
-          test:
-            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome/test
-            hints:
-              allow:
-                - POST
-    EmailTemplateDefaultContentResponse:
-      value:
-        subject: Welcome to ${org.name}!
-        body: <!DOCTYPE html><html><body><p>Hello, ${user.profile.firstName}. Click <a href="${activationLink}">here</a> to activate your account.</body></html>
-        _links:
-          self:
-            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome/default-content
-            hints:
-              allow:
-                - GET
-          template:
-            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome
-            hints:
-              allow:
-                - GET
-          preview:
-            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome/default-content/preview
-            hints:
-              allow:
-                - GET
-    ErrorApiValidationFailed:
-      value:
-        errorCode: E0000001
-        errorSummary: 'Api validation failed: {0}'
-        errorLink: E0000001
-        errorId: sampleiCF-8D5rLW6myqiPItW
-        errorCauses: []
-    ErrorCAPTCHALimitOfOne:
-      value:
-        errorCode: E0000165
-        errorSummary: CAPTCHA count limit reached. At most one CAPTCHA instance is allowed per Org.
-        errorLink: E0000165
-        errorId: oaejrB1fWL1S7mc-2KcG-SOtw
-        errorCauses: []
-    ErrorCAPTCHAOrgWideSetting:
-      value:
-        errorCode: E0000149
-        errorSummary: Current CAPTCHA is associated with org-wide settings, cannot be removed.
-        errorLink: E0000149
-        errorId: samplezsusshPdiTWiITwqBt8
-        errorCauses: []
-    ErrorEmailCustomizationCannotClearDefault:
-      value:
-        errorCode: E0000185
-        errorSummary: The isDefault parameter of the default email template customization can't be set to false.
-        errorLink: E0000185
-        errorId: oaejrB1fWL1S7mc-2KcG-SOtw
-        errorCauses: []
-    ErrorEmailCustomizationCannotDeleteDefault:
-      value:
-        errorCode: E0000184
-        errorSummary: A default email template customization can't be deleted.
-        errorLink: E0000184
-        errorId: oaeAdRqprFuTyKokyYPbURJkA
-        errorCauses: []
-    ErrorEmailCustomizationDefaultAlreadyExists:
-      value:
-        errorCode: E0000182
-        errorSummary: A default email template customization already exists.
-        errorLink: E0000182
-        errorId: oaeXYwTiMvASsC3O4HCzjFaCA
-        errorCauses: []
-    ErrorEmailCustomizationLanguageAlreadyExists:
-      value:
-        errorCode: E0000183
-        errorSummary: An email template customization for that language already exists.
-        errorLink: E0000183
-        errorId: oaeUcGELffqRay0u1OPdnPypw
-        errorCauses: []
-    ErrorResourceNotFound:
-      value:
-        errorCode: E0000007
-        errorSummary: 'Not found: {0}'
-        errorLink: E0000007
-        errorId: sampleMlLvGUj_YD5v16vkYWY
-        errorCauses: []
-    GetEmailTemplateResponse:
-      value:
-        name: welcome
-        _links:
-          self:
-            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome
-            hints:
-              allow:
-                - GET
-          defaultContent:
-            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome/default-content
-            hints:
-              allow:
-                - GET
-          customizations:
-            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome/customizations
-            hints:
-              allow:
-                - GET
-                - POST
-                - DELETE
-          test:
-            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome/test
-            hints:
-              allow:
-                - POST
-    ListEmailCustomizationResponse:
-      value:
-        - language: en
-          isDefault: true
-          subject: Welcome to ${org.name}!
-          body: <!DOCTYPE html><html><body><p>Hello, ${user.profile.firstName}. Click <a href="${activationLink}">here</a> to activate your account.</body></html>
-          id: oel11u6DqUiMbQkpl0g4
-          created: 2021-11-09T20:38:10.000Z
-          lastUpdated: 2021-11-11T20:38:10.000Z
-          _links:
-            self:
-              href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome/customizations/oel11u6DqUiMbQkpl0g4
-              hints:
-                allow:
-                  - GET
-                  - PUT
-                  - DELETE
-            template:
-              href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome
-              hints:
-                allow:
-                  - GET
-            preview:
-              href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome/customizations/oel11u6DqUiMbQkpl0g4/preview
-              hints:
-                allow:
-                  - GET
-            test:
-              href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome/test
-              hints:
-                allow:
-                  - POST
-    ListEmailTemplateResponse:
-      value:
-        - name: welcome
-          _links:
-            self:
-              href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome
-              hints:
-                allow:
-                  - GET
-            defaultContent:
-              href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome/default-content
-              hints:
-                allow:
-                  - GET
-            customizations:
-              href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome/customizations
-              hints:
-                allow:
-                  - GET
-                  - POST
-                  - DELETE
-            test:
-              href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome/test
-              hints:
-                allow:
-                  - POST
-    PreviewEmailCustomizationResponse:
-      value:
-        subject: Welcome to Okta!
-        body: <!DOCTYPE html><html><body><p>Hello, John. Click <a href="https://${yourOktaDomain}/...">here</a> to activate your account.</body></html>
-        _links:
-          self:
-            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome/customizations/oel2kk1zYJBJbeaGo0g4/preview
-            hints:
-              allow:
-                - GET
-          template:
-            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome
-            hints:
-              allow:
-                - GET
-          test:
-            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome/test
-            hints:
-              allow:
-                - POST
-    PreviewEmailTemplateDefaultContentResponse:
-      value:
-        subject: Welcome to Okta!
-        body: <!DOCTYPE html><html><body><p>Hello, John. Click <a href="https://${yourOktaDomain}/...">here</a> to activate your account.</body></html>
-        _links:
-          self:
-            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome/default-content/preview
-            hints:
-              allow:
-                - GET
-          template:
-            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome
-            hints:
-              allow:
-                - GET
-          defaultContent:
-            href: https://${yourOktaDomain}/api/v1/brands/${brandId}/templates/email/welcome/test/default-content
-            hints:
-              allow:
-                - POST
-  parameters:
-    pathBrandId:
-      name: brandId
-      in: path
-      required: true
-      schema:
-        type: string
-      description: The ID of the brand.
-    pathCaptchaId:
-      name: captchaId
-      in: path
-      schema:
-        type: string
-        example: abcd1234
-      required: true
-      description: id of the CAPTCHA
-    pathCustomizationId:
-      name: customizationId
-      in: path
-      required: true
-      schema:
-        type: string
-      description: The ID of the email customization.
-    pathTemplateName:
-      name: templateName
-      in: path
-      required: true
-      schema:
-        type: string
-      description: The name of the email template.
-    queryAfter:
-      name: after
-      in: query
-      schema:
-        type: string
-      description: The cursor to use for pagination. It is an opaque string that specifies your current location in the list and is obtained from the `Link` response header. See [Pagination](https://developer.okta.com/docs/reference/core-okta-api/#pagination) for more information.
-    queryLanguage:
-      name: language
-      schema:
-        $ref: '#/components/schemas/Language'
-      in: query
-      description: The language to use for the email. Defaults to the current user's language if unspecified.
-    queryLimit:
-      name: limit
-      in: query
-      schema:
-        type: integer
-        minimum: 1
-        maximum: 200
-        default: 20
-      description: A limit on the number of objects to return.
