@@ -1,0 +1,8 @@
+type: reference-docs
+definitionId: iga-api
+settings:
+  generateCodeSamples:
+    languages:
+      - lang: curl
+      - lang: JavaScript
+      - lang: Node.js

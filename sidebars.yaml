@@ -7,7 +7,15 @@ training:
         page: reference/rate-limits.md
       - label: Okta Expression Language
         page: reference/okta-expression-language.md
-  - group: API Reference
+  - group: Okta API Reference
     expanded: true
     pages:
-      - page: openapi/reference.page.yaml/*
+      - label: Okta Management APIs
+        page: openapi/reference.page.yaml/*
+      - label: IGA APIs
+        page: openapi/iga.page.yaml/*
+  - group: External APIs
+    expanded: true
+    pages:
+      - label: Petstore APIs
+        page: openapi/petstore.page.yaml/*
