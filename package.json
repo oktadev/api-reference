@@ -1,8 +1,8 @@
 {
-  "name": "portal-template",
+  "name": "okta-api-reference",
   "private": true,
   "version": "0.0.1",
-  "description": "Redocly portal template repository",
+  "description": "Okta API Reference built on the Redocly Developer Portal",
   "license": "MIT",
   "scripts": {
     "start": "redocly-portal develop -p 3000",
