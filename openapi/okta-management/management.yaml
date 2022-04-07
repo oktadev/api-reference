@@ -10,7 +10,7 @@ info:
   license:
     name: Apache-2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-  version: 2.10.0
+  version: 3.0.0
   x-logo:
     url: logo.svg
     backgroundColor: transparent
@@ -37,13 +37,13 @@ servers:
         default: auth.your-custom-domain.com
         description: The custom domain configured for your organization
 tags:
-  - name: ApiToken
   - name: Application
   - name: Authenticator
   - name: AuthorizationServer
   - name: Customization
   - name: CAPTCHA
-    description: ./tags/CAPTCHA.md
+    description:
+      $ref: ./tags/CAPTCHA.md
   - name: Domain
   - name: EventHook
   - name: Feature
@@ -65,197 +65,7 @@ tags:
   - name: User
   - name: UserFactor
   - name: NetworkZone
-x-tagGroups:
-  - name: User Directory
-    tags:
-      - User
-      - Group
-      - UserType
-      - Schema
-      - LinkedObject
-      - ProfileMapping
-  - name: Authentication
-    tags:
-      - ApiToken
-      - Application
-      - Authenticator
-      - AuthorizationServer
-      - CAPTCHA
-      - IdentityProvider
-      - Policy
-      - Session
-      - ThreatInsight
-      - TrustedOrigin
-      - UserFactor
-      - NetworkZone
-  - name: Customization
-    tags:
-      - Customization
-      - Domain
-      - Template
-  - name: Other
-    tags:
-      - EventHook
-      - Feature
-      - InlineHook
-      - OrgSetting
-      - SystemLog
-      - Subscription
 paths:
-  /api/v1/api-tokens:
-    get:
-      summary: List API Token Metadata
-      description: Enumerates the metadata of the active API tokens in your organization.
-      operationId: listApiTokens
-      parameters:
-        - $ref: '#/components/parameters/queryAfter'
-        - $ref: '#/components/parameters/queryLimit'
-        - name: q
-          in: query
-          description: Finds a token that matches the name, clientName, or status.
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ApiToken'
-              examples:
-                List Tokens:
-                  $ref: '#/components/examples/ApiTokenListMetadataResponse'
-      security:
-        - api_token: []
-        - oauth2:
-            - okta.apiTokens.read
-      tags:
-        - ApiToken
-    post:
-      summary: Create a new API Token
-      description: Creates a new API token for the current user, or the specified userId if provided. Requires org administration permissions to create tokens on behalf of other users.
-      operationId: createApiToken
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ApiToken'
-            examples:
-              Create an API Token for Self:
-                $ref: '#/components/examples/ApiTokenSelfRequest'
-              Create an API Token for a Specific User:
-                $ref: '#/components/examples/ApiTokenRequest'
-        required: true
-      responses:
-        '201':
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiToken'
-              examples:
-                HCaptcha:
-                  $ref: '#/components/examples/ApiTokenCreateResponse'
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - api_token: []
-        - oauth2:
-            - okta.apiTokens.manage
-      tags:
-        - ApiToken
-  /api/v1/api-tokens/current:
-    delete:
-      summary: Revoke the Current API Token
-      description: Revokes the API token provided in the Authorization header.
-      operationId: revokeCurrentApiToken
-      responses:
-        '204':
-          description: No Content
-        '403':
-          description: Forbidden
-          headers: {}
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - api_token: []
-      tags:
-        - ApiToken
-  /api/v1/api-tokens/{apiTokenId}:
-    parameters:
-      - $ref: '#/components/parameters/pathApiTokenId'
-    get:
-      summary: Get the Metadata for an API Token
-      description: Get the metadata for an active API token by id.
-      operationId: getApiToken
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiToken'
-              examples:
-                HCaptcha:
-                  $ref: '#/components/examples/ApiTokenMetadataResponse'
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-              examples:
-                Resource Not Found:
-                  $ref: '#/components/examples/ErrorResourceNotFound'
-      security:
-        - api_token: []
-        - oauth2:
-            - okta.apiTokens.read
-      tags:
-        - ApiToken
-    delete:
-      summary: Revoke an API Token
-      description: Revoke an API token by id.
-      operationId: revokeApiToken
-      responses:
-        '204':
-          description: No Content
-        '403':
-          description: Forbidden
-          headers: {}
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-              examples:
-                Resource Not Found:
-                  $ref: '#/components/examples/ErrorResourceNotFound'
-      security:
-        - api_token: []
-        - oauth2:
-            - okta.apiTokens.manage
-      tags:
-        - ApiToken
   /api/v1/apps:
     get:
       summary: List Applications
@@ -10040,8 +9850,6 @@ components:
           authorizationUrl: /oauth2/v1/authorize
           tokenUrl: /oauth2/v1/token
           scopes:
-            okta.apiToken.read: Read API Tokens.
-            okta.apiToken.manage: Read or modify API Tokens.
             okta.apps.read: Read Apps.
             okta.apps.manage: Read or modify Apps.
             okta.authenticators.read: Read Authenticators.
@@ -10087,105 +9895,6 @@ components:
             okta.users.read.self: Read Users.
             okta.users.read: Read Users.
   examples:
-    ApiTokenCreateResponse:
-      value:
-        name: My API Token
-        userId: 00uXXXXXXXXXXXXXXXXX
-        tokenRollingLifetimeMinutes: 43200
-        id: 00Tabcdefg1234567890
-        clientName: Okta API
-        token: 00abcdefAF3xOL0O4ey58Xp0bGCqSnz1GCow612345
-        status: ACTIVE
-        expiresAt: 2021-12-11T20:38:10.000Z
-        created: 2021-11-09T20:38:10.000Z
-        lastUpdated: 2021-11-11T20:38:10.000Z
-        _links:
-          self:
-            href: https://${yourOktaDomain}/api/v1/api-tokens/00Tabcdefg1234567890
-            hints:
-              allow:
-                - GET
-                - DELETE
-          user:
-            href: https://${yourOktaDomain}/api/v1/users/00uXXXXXXXXXXXXXXXXX
-            hints:
-              allow:
-                - GET
-    ApiTokenListMetadataResponse:
-      value:
-        - name: My API Token
-          userId: 00uabcdefg1234567890
-          tokenRollingLifetimeMinutes: 43200
-          id: 00Tabcdefg1234567890
-          clientName: Okta API
-          status: ACTIVE
-          expiresAt: 2021-12-11T20:38:10.000Z
-          created: 2021-11-09T20:38:10.000Z
-          lastUpdated: 2021-11-11T20:38:10.000Z
-          _links:
-            self:
-              href: https://${yourOktaDomain}/api/v1/api-tokens/00Tabcdefg1234567890
-              hints:
-                allow:
-                  - GET
-                  - DELETE
-            user:
-              href: https://${yourOktaDomain}/api/v1/users/00uabcdefg1234567890
-              hints:
-                allow:
-                  - GET
-        - name: Another API Token
-          userId: 00uabcdefg1234567890
-          tokenRollingLifetimeMinutes: 5
-          id: 00T1234567890abcdefg
-          clientName: Okta API
-          status: ACTIVE
-          expiresAt: 2021-11-11T20:43:10.000Z
-          created: 2021-11-09T20:38:10.000Z
-          lastUpdated: 2021-11-11T20:38:10.000Z
-          _links:
-            self:
-              href: https://${yourOktaDomain}/api/v1/api-tokens/00T1234567890abcdefg
-              hints:
-                allow:
-                  - GET
-                  - DELETE
-            user:
-              href: https://${yourOktaDomain}/api/v1/users/00uabcdefg1234567890
-              hints:
-                allow:
-                  - GET
-    ApiTokenMetadataResponse:
-      value:
-        name: My API Token
-        userId: 00uXXXXXXXXXXXXXXXXX
-        tokenRollingLifetimeMinutes: 43200
-        id: 00Tabcdefg1234567890
-        clientName: Okta API
-        status: ACTIVE
-        expiresAt: 2021-12-11T20:38:10.000Z
-        created: 2021-11-09T20:38:10.000Z
-        lastUpdated: 2021-11-11T20:38:10.000Z
-        _links:
-          self:
-            href: https://${yourOktaDomain}/api/v1/api-tokens/00Tabcdefg1234567890
-            hints:
-              allow:
-                - GET
-                - DELETE
-          user:
-            href: https://${yourOktaDomain}/api/v1/users/00uXXXXXXXXXXXXXXXXX
-            hints:
-              allow:
-                - GET
-    ApiTokenRequest:
-      value:
-        name: Another User's API Token
-        userId: 00uabcdefg1234567890
-        tokenRollingLifetimeMinutes: 5
-    ApiTokenSelfRequest:
-      value:
-        name: myHCaptcha
     CAPTCHAInstanceRequestHCaptcha:
       value:
         name: myHCaptcha
@@ -10499,14 +10208,6 @@ components:
               allow:
                 - POST
   parameters:
-    pathApiTokenId:
-      name: apiTokenId
-      in: path
-      schema:
-        type: string
-        example: 00Tabcdefg1234567890
-      required: true
-      description: id of the API Token
     pathBrandId:
       name: brandId
       in: path
@@ -10648,60 +10349,6 @@ components:
         - sso
         - any
         - none
-    ApiToken:
-      title: API Token
-      description: An API token for an Okta User. This token is NOT scoped any further and can be used for any API the user has permissions to call.
-      type: object
-      properties:
-        name:
-          type: string
-        tokenRollingLifetimeMinutes:
-          type: integer
-          minimum: 5
-          maximum: 129600
-          default: 43200
-        userId:
-          type: string
-        id:
-          type: string
-          readOnly: true
-        clientName:
-          type: string
-          readOnly: true
-        token:
-          type: string
-          readOnly: true
-        status:
-          allOf:
-            - $ref: '#/components/schemas/ApiTokenStatus'
-            - readOnly: true
-        expiresAt:
-          type: string
-          format: date-time
-          readOnly: true
-        created:
-          type: string
-          format: date-time
-          readOnly: true
-        lastUpdated:
-          type: string
-          format: date-time
-          readOnly: true
-        _link:
-          type: object
-          properties:
-            self:
-              $ref: '#/components/schemas/HrefObject'
-          readOnly: true
-      required:
-        - name
-    ApiTokenStatus:
-      type: string
-      enum:
-        - ACTIVE
-        - STALE
-        - SUSPICIOUS
-        - EXPIRING
     AppAndInstanceConditionEvaluatorAppOrInstance:
       type: object
       properties:
@@ -12692,6 +12339,10 @@ components:
         type:
           type: string
       type: object
+    IframeEmbedScopeAllowedApps:
+      type: string
+      enum:
+        - OKTA_ENDUSER
     ImageUploadResponse:
       type: object
       properties:
@@ -15608,15 +15259,18 @@ components:
     TrustedOriginScope:
       type: object
       properties:
-        stringValue:
-          type: string
         type:
           $ref: '#/components/schemas/TrustedOriginScopeType'
+        allowedOktaApps:
+          type: array
+          items:
+            $ref: '#/components/schemas/IframeEmbedScopeAllowedApps'
     TrustedOriginScopeType:
       type: string
       enum:
         - CORS
         - REDIRECT
+        - IFRAME_EMBED
     U2fUserFactor:
       allOf:
         - $ref: '#/components/schemas/UserFactor'
@@ -16366,3 +16020,39 @@ components:
               type: boolean
             wReplyURL:
               type: string
+x-tagGroups:
+  - name: User Directory
+    tags:
+      - User
+      - Group
+      - UserType
+      - Schema
+      - LinkedObject
+      - ProfileMapping
+  - name: Authentication
+    tags:
+      - ApiToken
+      - Application
+      - Authenticator
+      - AuthorizationServer
+      - CAPTCHA
+      - IdentityProvider
+      - Policy
+      - Session
+      - ThreatInsight
+      - TrustedOrigin
+      - UserFactor
+      - NetworkZone
+  - name: Customization
+    tags:
+      - Customization
+      - Domain
+      - Template
+  - name: Other
+    tags:
+      - EventHook
+      - Feature
+      - InlineHook
+      - OrgSetting
+      - SystemLog
+      - Subscription

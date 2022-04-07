@@ -12,6 +12,8 @@ reference:
     pages:
       - label: Okta Management APIs
         page: openapi/okta-management/management.page.yaml/*
+      - label: MyAccount APIs
+        page: openapi/okta-management/myaccount.page.yaml/*
   - group: IGA APIs
     expanded: true
     pages:
