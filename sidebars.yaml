@@ -11,9 +11,9 @@ reference:
     expanded: true
     pages:
       - label: Okta Management APIs
-        page: openapi/reference.page.yaml/*
+        page: openapi/okta-management/management.page.yaml/*
   - group: IGA APIs
     expanded: true
     pages:
       - label: IGA APIs
-        page: openapi/iga.page.yaml/*
+        page: openapi/iga/iga.page.yaml/*

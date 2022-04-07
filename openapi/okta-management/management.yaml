@@ -43,8 +43,7 @@ tags:
   - name: AuthorizationServer
   - name: Customization
   - name: CAPTCHA
-    description:
-      $ref: ./test.md
+    description: ./tags/CAPTCHA.md
   - name: Domain
   - name: EventHook
   - name: Feature
