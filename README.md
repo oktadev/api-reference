@@ -1,4 +1,6 @@
-# Redocly API developer portal
+# Okta API developer portal
+
+:construction: WORK IN PROGRESS :construction:
 
 ## Prerequisites
 
@@ -25,7 +27,6 @@ We heavily rely on caching for performance issues so if some changes are not ref
 
 Read the [online documentation](https://redoc.ly/docs/reference/introduction/).
 
-## Training program
+## Scripts
 
-The starter template contains training exercises which will teach you how to build a developer portal.
-After you start the development server, navigate to the app and follow the instructions to get started with your training.
+The `scripts` directory contains scripts that preprocess specs for the API reference documentation.
