@@ -1,0 +1,1284 @@
+openapi: 3.0.3
+info:
+  title: Account Management
+  version: 1.0.0
+  description: APIs for managing a user's own emails, phones, and profile.
+  termsOfService: https://developer.okta.com/terms/
+  contact:
+    name: Okta Developer Team
+    url: https://developer.okta.com/
+    email: devex-public@okta.com
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  x-logo:
+    url: logo.svg
+    backgroundColor: transparent
+    altText: Okta Developer
+externalDocs:
+  description: Find more info here
+  url: https://developer.okta.com
+servers:
+  - url: https://{subdomain}.{domain}
+    variables:
+      subdomain:
+        default: your-subdomain
+        description: The subdomain of your organization
+      domain:
+        enum:
+          - okta.com
+          - oktapreview.com
+          - okta-emea.com
+        default: okta.com
+        description: The okta domain of your organization.
+  - url: https://{customDomain}
+    variables:
+      customDomain:
+        default: auth.your-custom-domain.com
+        description: The custom domain configured for your organization
+tags:
+  - name: MyAccount Email
+  - name: MyAccount Phone
+  - name: MyAccount Profile
+paths:
+  /idp/myaccount/emails:
+    post:
+      summary: Add New Email
+      description: Add a new email
+      tags:
+        - MyAccount Email
+      responses:
+        '201':
+          $ref: '#/components/responses/Unverified-Email-Response'
+      operationId: post-idp-myaccount-emails
+      security:
+        - oauth2:
+            - okta.myaccount.email.manage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                profile:
+                  type: object
+                  required:
+                    - email
+                  properties:
+                    email:
+                      type: string
+                      example: saml.jackson@example.com
+                      format: email
+                      writeOnly: true
+                sendEmail:
+                  type: boolean
+                  default: true
+                  description: Specifies whether Okta should send an email to the end-user or whether the application will handle this itself.
+                state:
+                  type: string
+                  example: JPcFLTwOq7UvoFtmRd3EnyQwsR0PbDSI
+                  description: |
+                    Any application state that the client wishes to persist across the email challenge flow and receive back at the callback URL defined in the OIDC app configuration. This param is REQUIRED as a mechanism to prove back to the client that the email link was verified.
+                  writeOnly: true
+                role:
+                  type: string
+                  enum:
+                    - PRIMARY
+                    - SECONDARY
+                  example: PRIMARY
+                  writeOnly: true
+              required:
+                - profile
+            examples:
+              New Email:
+                value:
+                  profile:
+                    email: saml.jackson@example.com
+                  sendEmail: true
+                  role: PRIMARY
+                  state: JPcFLTwOq7UvoFtmRd3EnyQwsR0PbDSI
+        description: New email
+    get:
+      summary: List My Emails
+      operationId: get-idp-myaccount-emails
+      description: List all emails
+      tags:
+        - MyAccount Email
+      security:
+        - oauth2:
+            - okta.myaccount.email.read
+      responses:
+        '200':
+          $ref: '#/components/responses/Email-Array-Response'
+  '/idp/myaccount/emails/{id}':
+    get:
+      summary: Get Email By ID
+      description: Get an email by email id
+      tags:
+        - MyAccount Email
+      responses:
+        '200':
+          $ref: '#/components/responses/Verified-Email-Response'
+      operationId: 'get-idp-myaccount-emails-:id:'
+      security:
+        - oauth2:
+            - okta.myaccount.email.read
+    parameters:
+      - schema:
+          type: string
+          example: 69dca29c2d8dbb0dca14395ccdb92317
+        name: id
+        in: path
+        required: true
+    delete:
+      summary: Delete Email By ID
+      description: Delete an email by email id
+      tags:
+        - MyAccount Email
+      operationId: 'delete-idp-myaccount-emails-:id:'
+      responses:
+        '204':
+          description: No Content
+      security:
+        - oauth2:
+            - okta.myaccount.email.manage
+      parameters: [ ]
+  '/idp/myaccount/emails/{id}/challenge/{challengeId}/verify':
+    parameters:
+      - schema:
+          type: string
+          example: 00T196qTp3LIMZQ0L0g3
+        name: id
+        in: path
+        required: true
+      - schema:
+          type: string
+        name: challengeId
+        in: path
+        required: true
+    post:
+      summary: Verify Email OTP
+      operationId: post-idp-myaccount-emails-id-verify
+      description: Verify a otp for an email
+      tags:
+        - MyAccount Email
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                Invalid OTP:
+                  value:
+                    errorCode: E0000004
+                    errorSummary: Authentication failed
+                    errorLink: E0000004
+                    errorId: oaemLalkv4pT2WUHhqEuNLoDw
+                    errorCauses:
+                      - errorSummary: User is not authorized.
+      security:
+        - oauth2:
+            - okta.myaccount.email.manage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                verificationCode:
+                  type: string
+                  example: '498560'
+                  format: password
+                  writeOnly: true
+              required:
+                - verificationCode
+            examples:
+              OTP Example:
+                value:
+                  verificationCode: '456058'
+  '/idp/myaccount/emails/{id}/challenge':
+    parameters:
+      - schema:
+          type: string
+          example: 00T196qTp3LIMZQ0L0g3
+        name: id
+        in: path
+        required: true
+    post:
+      summary: Send Email Challenge
+      operationId: post-idp-myaccount-emails-id-challenge
+      description: Send a challenge on an email
+      tags:
+        - MyAccount Email
+      security:
+        - oauth2:
+            - okta.myaccount.email.manage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  type: string
+                  example: JPcFLTwOq7UvoFtmRd3EnyQwsR0PbDSI
+                  writeOnly: true
+              required:
+                - state
+            examples:
+              Challenge Example:
+                value:
+                  state: JPcFLTwOq7UvoFtmRd3EnyQwsR0PbDSI
+      responses:
+        '201':
+          description: Created
+          headers: { }
+          content:
+            application/json:
+              schema:
+                description: ''
+                type: object
+                example:
+                  id: myaccount.2wdtXPtmS0WpKq4bnjlYIw
+                  status: UNVERIFIED
+                  expiresAt: '2022-02-01T00:19:08.220Z'
+                  profile:
+                    email: s.jackson@example.com
+                  _links:
+                    verify:
+                      href: 'https://example.okta.com/idp/myaccount/emails/e2a84ed3cc538f75457596faa74a4532/challenge/myaccount.2wdtXPtmS0WpKq4bnjlYIw/verify'
+                      hints:
+                        allow:
+                          - POST
+                    poll:
+                      href: 'https://example.okta.com/idp/myaccount/emails/e2a84ed3cc538f75457596faa74a4532/challenge/myaccount.2wdtXPtmS0WpKq4bnjlYIw'
+                      hints:
+                        allow:
+                          - GET
+                properties:
+                  id:
+                    type: string
+                    minLength: 1
+                  status:
+                    type: string
+                    minLength: 1
+                  expiresAt:
+                    type: string
+                    minLength: 1
+                  profile:
+                    type: object
+                    required:
+                      - email
+                    properties:
+                      email:
+                        type: string
+                        minLength: 1
+                  _links:
+                    type: object
+                    required:
+                      - verify
+                      - poll
+                    properties:
+                      verify:
+                        type: object
+                        required:
+                          - href
+                          - hints
+                        properties:
+                          href:
+                            type: string
+                            minLength: 1
+                          hints:
+                            type: object
+                            required:
+                              - allow
+                            properties:
+                              allow:
+                                type: array
+                                items:
+                                  type: string
+                      poll:
+                        type: object
+                        required:
+                          - href
+                          - hints
+                        properties:
+                          href:
+                            type: string
+                            minLength: 1
+                          hints:
+                            type: object
+                            required:
+                              - allow
+                            properties:
+                              allow:
+                                type: array
+                                items:
+                                  type: string
+                required:
+                  - id
+                  - status
+                  - expiresAt
+                  - profile
+                  - _links
+              examples:
+                challenge created response:
+                  value:
+                    id: myaccount.2wdtXPtmS0WpKq4bnjlYIw
+                    status: UNVERIFIED
+                    expiresAt: '2022-02-01T00:19:08.220Z'
+                    profile:
+                      email: s.jackson@example.com
+                    _links:
+                      verify:
+                        href: 'https://example.okta.com/idp/myaccount/emails/e2a84ed3cc538f75457596faa74a4532/challenge/myaccount.2wdtXPtmS0WpKq4bnjlYIw/verify'
+                        hints:
+                          allow:
+                            - POST
+                      poll:
+                        href: 'https://example.okta.com/idp/myaccount/emails/e2a84ed3cc538f75457596faa74a4532/challenge/myaccount.2wdtXPtmS0WpKq4bnjlYIw'
+                        hints:
+                          allow:
+                            - GET
+  '/idp/myaccount/emails/{id}/challenge/{challengeId}':
+    parameters:
+      - schema:
+          type: string
+          example: 00T196qTp3LIMZQ0L0g3
+        name: id
+        in: path
+        required: true
+      - schema:
+          type: string
+          example: x1MDGzUb
+        name: challengeId
+        in: path
+        required: true
+    get:
+      summary: Poll for Email Magic Link
+      description: Poll for challenge status for an email
+      tags:
+        - MyAccount Email
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                description: ''
+                type: object
+                example:
+                  id: myaccount.DDvNA6XORA2dIfB894o32g
+                  status: UNVERIFIED
+                  expiresAt: '2022-02-01T00:41:25.497Z'
+                  profile:
+                    email: s.jackson@example.com
+                  _links:
+                    verify:
+                      href: 'https://example.okta.com/idp/myaccount/emails/da03e945d44d8b714da2b9fded39e851/challenge/myaccount.DDvNA6XORA2dIfB894o32g/verify'
+                      hints:
+                        allow:
+                          - POST
+                    poll:
+                      href: 'https://example.okta.com/idp/myaccount/emails/da03e945d44d8b714da2b9fded39e851/challenge/myaccount.DDvNA6XORA2dIfB894o32g'
+                      hints:
+                        allow:
+                          - GET
+                properties:
+                  id:
+                    type: string
+                    minLength: 1
+                  status:
+                    type: string
+                    minLength: 1
+                  expiresAt:
+                    type: string
+                    minLength: 1
+                  profile:
+                    type: object
+                    required:
+                      - email
+                    properties:
+                      email:
+                        type: string
+                        minLength: 1
+                  _links:
+                    type: object
+                    required:
+                      - verify
+                      - poll
+                    properties:
+                      verify:
+                        type: object
+                        required:
+                          - href
+                          - hints
+                        properties:
+                          href:
+                            type: string
+                            minLength: 1
+                          hints:
+                            type: object
+                            required:
+                              - allow
+                            properties:
+                              allow:
+                                type: array
+                                items:
+                                  type: string
+                      poll:
+                        type: object
+                        required:
+                          - href
+                          - hints
+                        properties:
+                          href:
+                            type: string
+                            minLength: 1
+                          hints:
+                            type: object
+                            required:
+                              - allow
+                            properties:
+                              allow:
+                                type: array
+                                items:
+                                  type: string
+                required:
+                  - id
+                  - status
+                  - expiresAt
+                  - profile
+                  - _links
+              examples:
+                Polling Response Example:
+                  value:
+                    id: myaccount.DDvNA6XORA2dIfB894o32g
+                    status: UNVERIFIED
+                    expiresAt: '2022-02-01T00:41:25.497Z'
+                    profile:
+                      email: s.jackson@example.com
+                    _links:
+                      verify:
+                        href: 'https://example.okta.com/idp/myaccount/emails/da03e945d44d8b714da2b9fded39e851/challenge/myaccount.DDvNA6XORA2dIfB894o32g/verify'
+                        hints:
+                          allow:
+                            - POST
+                      poll:
+                        href: 'https://example.okta.com/idp/myaccount/emails/da03e945d44d8b714da2b9fded39e851/challenge/myaccount.DDvNA6XORA2dIfB894o32g'
+                        hints:
+                          allow:
+                            - GET
+        '404':
+          description: Not Found
+      operationId: get-idp-myaccount-emails-id-challenge-challengeId
+      security:
+        - oauth2:
+            - okta.myaccount.email.manage
+  /idp/myaccount/phones:
+    get:
+      summary: List My Phones
+      description: Get all my phones
+      tags:
+        - MyAccount Phone
+      responses:
+        '200':
+          $ref: '#/components/responses/Phone-Array-Response'
+      operationId: get-idp-myaccount-phones
+      security:
+        - oauth2:
+            - okta.myaccount.phone.read
+    post:
+      summary: Add New Phone
+      description: Add a new phone
+      operationId: post-idp-myaccount-phones
+      tags:
+        - MyAccount Phone
+      responses:
+        '201':
+          $ref: '#/components/responses/Unverified-Phone-Response'
+      security:
+        - oauth2:
+            - okta.myaccount.phone.manage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                profile:
+                  type: object
+                  properties:
+                    phoneNumber:
+                      type: string
+                      example: 555-555-5555
+                sendCode:
+                  type: boolean
+                  default: true
+                method:
+                  type: string
+                  enum:
+                    - SMS
+                    - CALL
+                  example: SMS
+                  writeOnly: true
+            examples:
+              Okta-Sends-Challenge:
+                value:
+                  profile:
+                    phoneNumber: +1(444)444-4444
+                  sendCode: true
+                  method: SMS
+  '/idp/myaccount/phones/{id}':
+    parameters:
+      - schema:
+          type: string
+          example: sms10ltpSdwXJCem80g4
+        name: id
+        in: path
+        required: true
+    get:
+      summary: Get Phone By ID
+      description: Get a phone given a phone id
+      tags:
+        - MyAccount Phone
+      responses:
+        '200':
+          $ref: '#/components/responses/Verified-Phone-Response'
+      operationId: get-idp-myaccount-phones-id
+      security:
+        - oauth2:
+            - okta.myaccount.phone.read
+    delete:
+      summary: Delete Phone By ID
+      description: Delete a phone given a phone id
+      operationId: delete-idp-myaccount-phones-id
+      tags:
+        - MyAccount Phone
+      responses:
+        '204':
+          description: No Content
+      security:
+        - oauth2:
+            - okta.myaccount.phone.manage
+  '/idp/myaccount/phones/{id}/challenge':
+    parameters:
+      - schema:
+          type: string
+          example: sms18vtfKgzqDhNqP0g4
+        name: id
+        in: path
+        required: true
+    post:
+      summary: Send Phone Challenge
+      description: Send challenge for a phone
+      operationId: post-idp-myaccount-phones-id-challenge
+      tags:
+        - MyAccount Phone
+      responses:
+        '200':
+          description: OK
+      security:
+        - oauth2:
+            - okta.myaccount.phone.manage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                method:
+                  type: string
+                  example: SMS
+                  enum:
+                    - SMS
+                    - CALL
+                  writeOnly: true
+                retry:
+                  type: boolean
+                  default: false
+              required:
+                - method
+            examples:
+              Send-SMS-Challenge:
+                value:
+                  method: SMS
+              Send-Voice-Challenge:
+                value:
+                  method: CALL
+  '/idp/myaccount/phones/{id}/verify':
+    parameters:
+      - schema:
+          type: string
+          example: sms18vtfKgzqDhNqP0g4
+        name: id
+        in: path
+        required: true
+    post:
+      summary: Verify Phone Challenge
+      description: Verify a phone challenge
+      operationId: post-idp-myaccount-phones-id-verify
+      tags:
+        - MyAccount Phone
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                Invalid-OTP:
+                  value:
+                    errorCode: E0000001
+                    errorSummary: 'Api validation failed: factorId and/or verificationCode'
+                    errorLink: E0000001
+                    errorId: oaeexs0s-ruRcivXBTGXdv41A
+                    errorCauses:
+                      - errorSummary: 'Invalid factor id, no phone factor found.'
+      security:
+        - oauth2:
+            - okta.myaccount.phone.manage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                verificationCode:
+                  type: string
+                  example: '492592'
+                  format: password
+                  writeOnly: true
+              required:
+                - verificationCode
+            examples:
+              Verify-SMS-Challenge:
+                value:
+                  verificationCode: '048284'
+  /idp/myaccount/profile:
+    get:
+      summary: Get My Profile
+      description: Get my profile
+      tags:
+        - MyAccount Profile
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+              examples:
+                Success Response:
+                  value:
+                    createdAt: '2020-01-14T20:05:32.000Z'
+                    modifiedAt: '2020-01-14T20:05:32.000Z'
+                    profile:
+                      customBoolean: false
+                      foo: bar
+                      login: example@ex.ample.com
+                      mobilePhone: +1(555)555-5555
+                      customInteger: 42
+                    _links:
+                      self:
+                        href: 'https://example.okta.com/idp/myaccount/profile'
+                      describedBy:
+                        href: 'https://example.okta.com/idp/myaccount/profile/schema'
+      operationId: get-idp-myaccount-profile
+      security:
+        - oauth2:
+            - okta.myaccount.profile.read
+            - okta.myaccount.profile.manage
+    put:
+      summary: Update My Profile
+      description: Update my profile
+      operationId: put-idp-myaccount-profile
+      tags:
+        - MyAccount Profile
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+              examples:
+                Success Response:
+                  value:
+                    createdAt: '2020-01-14T20:05:32.000Z'
+                    modifiedAt: '2020-01-14T20:05:32.000Z'
+                    profile:
+                      customBoolean: true
+                      foo: bar
+                      login: example@ex.ample.com
+                      mobilePhone: 555-555-5555
+                      customInteger: 42
+                    _links:
+                      self:
+                        href: 'https://example.okta.com/idp/myaccount/profile'
+                      describedBy:
+                        href: 'https://example.okta.com/idp/myaccount/profile/schema'
+      security:
+        - oauth2:
+            - okta.myaccount.profile.manage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                profile:
+                  type: object
+            examples:
+              Update Profile:
+                value:
+                  profile:
+                    customBoolean: true
+                    foo: bar
+                    login: example@ex.ample.com
+                    mobilePhone: 555-555-5555
+                    customInteger: 42
+  /idp/myaccount/profile/schema:
+    get:
+      summary: Get My Profile Schema
+      description: Get my profile schema
+      tags:
+        - MyAccount Profile
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Schema'
+              examples:
+                Success Response:
+                  value:
+                    properties:
+                      customBoolean:
+                        permissions:
+                          SELF: READ_WRITE
+                        title: customBoolean
+                        type: boolean
+                      foo:
+                        permissions:
+                          SELF: READ_ONLY
+                        title: foo
+                        type: string
+                      login:
+                        maxLength: 100
+                        minLength: 5
+                        permissions:
+                          SELF: READ_ONLY
+                        required: true
+                        title: Username
+                        type: string
+                      mobilePhone:
+                        maxLength: 100
+                        permissions:
+                          SELF: READ_WRITE
+                        title: Mobile phone
+                        type: string
+                      customInteger:
+                        permissions:
+                          SELF: READ_WRITE
+                        title: customInteger
+                        type: integer
+                    _links:
+                      self:
+                        href: 'https://example.okta.com/idp/myaccount/profile/schema'
+                      user:
+                        href: 'https://example.okta.com/idp/myaccount/profile'
+      operationId: get-idp-myaccount-profile-schema
+      security:
+        - oauth2:
+            - okta.myaccount.profile.read
+            - okta.myaccount.profile.manage
+components:
+  schemas:
+    Email:
+      description: Email Object
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+          readOnly: true
+        status:
+          type: string
+          minLength: 1
+          readOnly: true
+        profile:
+          type: object
+          required:
+            - email
+          properties:
+            email:
+              type: string
+              minLength: 1
+        roles:
+          type: array
+          items:
+            type: string
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  minLength: 1
+                hints:
+                  type: object
+                  properties:
+                    allow:
+                      type: array
+                      items:
+                        type: string
+            challenge:
+              type: object
+              properties:
+                href:
+                  type: string
+                  minLength: 1
+                hints:
+                  type: object
+                  properties:
+                    allow:
+                      type: array
+                      items:
+                        type: string
+            verify:
+              type: object
+              properties:
+                href:
+                  type: string
+                  minLength: 1
+                hints:
+                  type: object
+                  properties:
+                    allow:
+                      type: array
+                      items:
+                        type: string
+            poll:
+              type: object
+              properties:
+                href:
+                  type: string
+                  minLength: 1
+                hints:
+                  type: object
+                  properties:
+                    allow:
+                      type: array
+                      items:
+                        type: string
+      required:
+        - id
+        - status
+        - profile
+        - roles
+    Phone:
+      description: Phone Object
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+          readOnly: true
+        status:
+          type: string
+          minLength: 1
+          readOnly: true
+        profile:
+          type: object
+          required:
+            - phoneNumber
+          properties:
+            phoneNumber:
+              type: string
+              minLength: 1
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  minLength: 1
+                hints:
+                  type: object
+                  properties:
+                    allow:
+                      type: array
+                      items:
+                        type: string
+            challenge:
+              type: object
+              properties:
+                href:
+                  type: string
+                  minLength: 1
+                hints:
+                  type: object
+                  properties:
+                    allow:
+                      type: array
+                      items:
+                        type: string
+            verify:
+              type: object
+              properties:
+                href:
+                  type: string
+                  minLength: 1
+                hints:
+                  type: object
+                  properties:
+                    allow:
+                      type: array
+                      items:
+                        type: string
+      required:
+        - id
+        - status
+        - profile
+    Error:
+      type: object
+      description: Standard API Error Object
+      properties:
+        errorCode:
+          type: string
+          example: E0000001
+          readOnly: true
+        errorSummary:
+          type: string
+          example: Bad request because XYZ is missing.
+          readOnly: true
+        errorLink:
+          type: string
+          example: E0000001
+          readOnly: true
+        errorId:
+          type: string
+          example: oaeWGQKoQHeQmy0u8w8bPwi_Q
+          readOnly: true
+        errorCauses:
+          type: array
+          items:
+            type: object
+            properties:
+              errorSummary:
+                type: string
+                example: Bad request because XYZ is missing.
+                readOnly: true
+    Schema:
+      title: Schema
+      type: object
+      description: Describes a user's directory profile schema (based on UD).
+      properties:
+        properties:
+          type: object
+          description: 'Based on https://developer.okta.com/docs/reference/api/schemas/#schema-properties'
+          readOnly: true
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  format: uri
+                  readOnly: true
+            user:
+              type: object
+              properties:
+                href:
+                  type: string
+                  format: uri
+                  readOnly: true
+    Profile:
+      type: object
+      description: Profile object based on the user's directory profile schema (based on UD).
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        modifiedAt:
+          type: string
+          format: date-time
+          readOnly: true
+        profile:
+          type: object
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  format: uri
+                  readOnly: true
+            describedBy:
+              type: object
+              properties:
+                href:
+                  type: string
+                  format: uri
+                  readOnly: true
+  responses:
+    Verified-Email-Response:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Email'
+          examples:
+            Success Response:
+              value:
+                id: 69dca29c2d8dbb0dca14395ccdb92317
+                status: VERIFIED
+                roles:
+                  - PRIMARY
+                profile:
+                  email: saml.jackson@example.com
+                _links:
+                  self:
+                    href: 'https://example.okta.com/idp/myaccount/emails/69dca29c2d8dbb0dca14395ccdb92317'
+                    hints:
+                      allow:
+                        - GET
+                  challenge:
+                    href: 'https://example.okta.com/idp/myaccount/emails/69dca29c2d8dbb0dca14395ccdb92317/challenge'
+                    hints:
+                      allow:
+                        - POST
+    Unverified-Email-Response:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Email'
+          examples:
+            Success Response:
+              value:
+                id: e2a84ed3cc538f75457596faa74a4532
+                status: UNVERIFIED
+                roles:
+                  - PRIMARY
+                profile:
+                  email: s.jackson@company.com
+                _links:
+                  self:
+                    href: 'https://example.okta.com/idp/myaccount/emails/e2a84ed3cc538f75457596faa74a4532'
+                    hints:
+                      allow:
+                        - GET
+                        - DELETE
+                  challenge:
+                    href: 'https://example.okta.com/idp/myaccount/emails/e2a84ed3cc538f75457596faa74a4532/challenge'
+                    hints:
+                      allow:
+                        - POST
+                  verify:
+                    href: 'https://example.okta.com/idp/myaccount/emails/e2a84ed3cc538f75457596faa74a4532/challenge/myaccount.IDseIErVSEiFlLyAbzSp5Q/verify'
+                    hints:
+                      allow:
+                        - POST
+                  poll:
+                    href: 'https://example.okta.com/idp/myaccount/emails/e2a84ed3cc538f75457596faa74a4532/challenge/myaccount.IDseIErVSEiFlLyAbzSp5Q'
+                    hints:
+                      allow:
+                        - GET
+    Email-Array-Response:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Email'
+          examples:
+            Success Response:
+              value:
+                - id: 69dca29c2d8dbb0dca14395ccdb92317
+                  status: VERIFIED
+                  roles:
+                    - PRIMARY
+                  profile:
+                    email: saml.jackson@example.com
+                  _links:
+                    self:
+                      href: 'https://example.okta.com/idp/myaccount/emails/69dca29c2d8dbb0dca14395ccdb92317'
+                      hints:
+                        allow:
+                          - GET
+                    challenge:
+                      href: 'https://example.okta.com/idp/myaccount/emails/69dca29c2d8dbb0dca14395ccdb92317/challenge'
+                      hints:
+                        allow:
+                          - POST
+                - id: e2a84ed3cc538f75457596faa74a4532
+                  status: UNVERIFIED
+                  roles:
+                    - PRIMARY
+                  profile:
+                    email: s.jackson@company.com
+                  _links:
+                    self:
+                      href: 'https://example.okta.com/idp/myaccount/emails/e2a84ed3cc538f75457596faa74a4532'
+                      hints:
+                        allow:
+                          - GET
+                          - DELETE
+                    challenge:
+                      href: 'https://example.okta.com/idp/myaccount/emails/e2a84ed3cc538f75457596faa74a4532/challenge'
+                      hints:
+                        allow:
+                          - POST
+                    verify:
+                      href: 'https://example.okta.com/idp/myaccount/emails/e2a84ed3cc538f75457596faa74a4532/challenge/myaccount.IDseIErVSEiFlLyAbzSp5Q/verify'
+                      hints:
+                        allow:
+                          - POST
+                    poll:
+                      href: 'https://example.okta.com/idp/myaccount/emails/e2a84ed3cc538f75457596faa74a4532/challenge/myaccount.IDseIErVSEiFlLyAbzSp5Q'
+                      hints:
+                        allow:
+                          - GET
+    Phone-Array-Response:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Phone'
+          examples:
+            Success Response:
+              value:
+                - id: sms10ltpSdwXJCem80g4
+                  status: VERIFIED
+                  profile:
+                    phoneNumber: '+13333333333'
+                  _links:
+                    self:
+                      href: 'https://example.okta.com/idp/myaccount/phones/sms10ltpSdwXJCem80g4'
+                      hints:
+                        allow:
+                          - GET
+                          - DELETE
+                    challenge:
+                      href: 'https://example.okta.com/idp/myaccount/phones/sms10ltpSdwXJCem80g4/challenge'
+                      hints:
+                        allow:
+                          - POST
+                - id: sms18vrvVDDmi4Qlz0g4
+                  status: UNVERIFIED
+                  profile:
+                    phoneNumber: '+12222222222'
+                  _links:
+                    self:
+                      href: 'https://example.okta.com/idp/myaccount/phones/sms18vrvVDDmi4Qlz0g4'
+                      hints:
+                        allow:
+                          - GET
+                          - DELETE
+                    challenge:
+                      href: 'https://example.okta.com/idp/myaccount/phones/sms18vrvVDDmi4Qlz0g4/challenge'
+                      hints:
+                        allow:
+                          - POST
+                    verify:
+                      href: 'https://example.okta.com/idp/myaccount/phones/sms18vrvVDDmi4Qlz0g4/verify'
+                      hints:
+                        allow:
+                          - POST
+    Unverified-Phone-Response:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Phone'
+          examples:
+            Success Response:
+              value:
+                id: sms18vtfKgzqDhNqP0g4
+                status: UNVERIFIED
+                profile:
+                  phoneNumber: +1(444)444-4444
+                _links:
+                  self:
+                    href: 'https://example.okta.com/idp/myaccount/phones/sms18vtfKgzqDhNqP0g4'
+                    hints:
+                      allow:
+                        - GET
+                        - DELETE
+                  challenge:
+                    href: 'https://example.okta.com/idp/myaccount/phones/sms18vtfKgzqDhNqP0g4/challenge'
+                    hints:
+                      allow:
+                        - POST
+                  verify:
+                    href: 'https://example.okta.com/idp/myaccount/phones/sms18vtfKgzqDhNqP0g4/verify'
+                    hints:
+                      allow:
+                        - POST
+    Verified-Phone-Response:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Phone'
+          examples:
+            Success Response:
+              value:
+                id: sms10ltpSdwXJCem80g4
+                status: VERIFIED
+                profile:
+                  phoneNumber: '+1(333)333-3333'
+                _links:
+                  self:
+                    href: 'https://example.okta.com/idp/myaccount/phones/sms10ltpSdwXJCem80g4'
+                    hints:
+                      allow:
+                        - GET
+                        - DELETE
+                  challenge:
+                    href: 'https://example.okta.com/idp/myaccount/phones/sms10ltpSdwXJCem80g4/challenge'
+                    hints:
+                      allow:
+                        - POST
+  securitySchemes:
+    api_token:
+      description: "Pass the API token as the Authorization header value prefixed with SSWS: 'Authorizaion: SSWS {API Token}'"
+      name: Authorization
+      type: apiKey
+      in: header
+    oauth2:
+      type: oauth2
+      description: "Pass the access_token as the value of the Authorization header: 'Authorization: {access_token}'"
+      flows:
+        authorizationCode:
+          authorizationUrl: /oauth2/v1/authorize
+          tokenUrl: /oauth2/v1/token
+          scopes:
+            okta.myaccount.email.read: Read access to user emails
+            okta.myaccount.email.manage: Write access to user emails
+            okta.myaccount.phone.read: Read access to user phones
+            okta.myaccount.phone.manage: Write access to user phones
+            okta.myaccount.profile.read: Read access to user profile & schema
+            okta.myaccount.profile.manage: Write access to user profile & schema

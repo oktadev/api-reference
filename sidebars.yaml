@@ -1,13 +1,21 @@
-training:
-  - page: reference/index.md
+reference:
+  - page: index.md
   - group: Guides or Stuff
     expanded: true
     pages:
       - label: Rate Limits
-        page: reference/rate-limits.md
+        page: guides/rate-limits.md
       - label: Okta Expression Language
-        page: reference/okta-expression-language.md
-  - group: API Reference
+        page: guides/okta-expression-language.md
+  - group: Okta Management API
     expanded: true
     pages:
-      - page: openapi/reference.page.yaml/*
+      - label: Okta Management APIs
+        page: openapi/okta-management/management.page.yaml/*
+      - label: MyAccount APIs
+        page: openapi/okta-management/myaccount.page.yaml/*
+  - group: IGA APIs
+    expanded: true
+    pages:
+      - label: IGA APIs
+        page: openapi/iga/iga.page.yaml/*

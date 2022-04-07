@@ -14,7 +14,9 @@ logo:
 toc:
   enable: true
 oasDefinitions:
-  okta-management: ./openapi/management.yaml
+  okta-management: ./openapi/okta-management/management.yaml
+  okta-myaccount: ./openapi/okta-management/myaccount.yaml
+  iga-api: ./openapi/iga/alpha-accesscertifications.yaml
   # add links to definitions in our API registry by using a fully qualified URL.
 stylesheets:
   - https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700&display=swap

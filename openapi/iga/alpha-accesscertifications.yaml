@@ -1,0 +1,1793 @@
+openapi: 3.0.1
+
+# This is the main IGA Open API specification.
+# IGA follows contract first approach.
+# Hence, define the API specifications as per the best practices.
+# All the APIs are grouped in logical fashion. Within each group they are sorted alphabetically too.
+# Pls maintain that order and grouping, helps in easy reference.
+# One is free to edit the YML file in any editor they like (IntelliJ Swagger plugin, Swagger UI editor, Postman).
+
+info:
+  title: IGA APIs (Open API specs)
+  version: v1
+servers:
+  - url: https://rain.okta1.com
+    description: Local Dev Environment (https)
+  - url: https://qa-rg-oie-ct19.clouditude.com
+    description: CT19 Test org
+
+paths:
+  # ================================================================================================================
+  # Governance Apps's API.
+  # The API definitions are sorted by API Path. Pls maintain that order when adding or altering.
+  # ================================================================================================================
+  /api/v1/governance/apps:
+    get:
+      operationId: searchApps
+      summary: Returns small amount of apps data by search criteria
+      tags: [ Campaign Templates ]
+      parameters:
+        - $ref: "#/components/parameters/q"
+        - $ref: "#/components/parameters/afterString"
+        - $ref: "#/components/parameters/limit"
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_ADMIN_READ ]
+      responses:
+        '200':
+          $ref: "#/components/responses/ResourceProfilesResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  # To be removed
+  /api/v1/governance/date-format:
+    get:
+      operationId: getSupportedDateFormat
+      summary: Returns the date format supported by the server
+      description: DEPRECATED. A temporary endpoint
+      tags: [ Campaign Templates ]
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_ADMIN_READ ]
+      responses:
+        '200':
+          $ref: "#/components/responses/DateFormatResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  # To be removed
+  /api/v1/governance/date-format/my:
+    get:
+      operationId: getMySupportedDateFormat
+      summary: Returns the date format supported by the server
+      description: DEPRECATED. A temporary endpoint
+      tags: [ Campaign Templates ]
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_REVIEWER_READ ]
+      responses:
+        '200':
+          $ref: "#/components/responses/DateFormatResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  # ================================================================================================================
+  # Campaign template APIs.
+  # The API definitions are sorted by API Path. Pls maintain that order when adding or altering.
+  # ================================================================================================================
+  /api/v1/governance/campaigns/templates/status/{status}:
+    get:
+      operationId: getCampaignTemplatesByStatus
+      summary: Returns all campaign templates by status
+      description: DEPRECATED. Use GET /api/v1/governance/campaigns/templates instead.
+      tags: [ Campaign Templates ]
+      parameters:
+        - $ref: "#/components/parameters/campaignTemplateStatus"
+        - $ref: "#/components/parameters/search"
+        - $ref: "#/components/parameters/afterInteger"
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/sortBy"
+        - $ref: "#/components/parameters/sortOrder"
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_ADMIN_READ ]
+      responses:
+        '200':
+          $ref: "#/components/responses/CampaignTemplatesResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/v1/governance/campaigns/templates:
+    get:
+      operationId: getCampaignTemplates
+      summary: Returns all campaign templates by search criteria
+      tags: [ Campaign Templates ]
+      parameters:
+        - $ref: "#/components/parameters/search"
+        - $ref: "#/components/parameters/campaignTemplateStatuses"
+        - $ref: "#/components/parameters/afterInteger"
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/templateSortByArray"
+        - $ref: "#/components/parameters/sortOrderArray"
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_ADMIN_READ ]
+      responses:
+        '200':
+          $ref: "#/components/responses/CampaignTemplatesResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+    post:
+      operationId: createCampaignTemplate
+      summary: Creates a new campaign template
+      tags: [ Campaign Templates ]
+      requestBody:
+        $ref: '#/components/requestBodies/CampaignTemplateRequestBody'
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_ADMIN_MANAGE ]
+      responses:
+        '200':
+          $ref: "#/components/responses/CampaignTemplateResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/v1/governance/campaigns/templates/{id}:
+    get:
+      operationId: getCampaignTemplate
+      summary: Retrieves a campaign template
+      tags: [ Campaign Templates ]
+      parameters:
+        - $ref: "#/components/parameters/templateId"
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_ADMIN_READ ]
+      responses:
+        '200':
+          $ref: "#/components/responses/CampaignTemplateResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+    put:
+      operationId: updateCampaignTemplate
+      summary: Updates an existing campaign template
+      tags: [ Campaign Templates ]
+      parameters:
+        - $ref: "#/components/parameters/templateId"
+      requestBody:
+        $ref: '#/components/requestBodies/CampaignTemplateRequestBody'
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_ADMIN_MANAGE ]
+      responses:
+        '200':
+          $ref: "#/components/responses/CampaignTemplateResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+    delete:
+      operationId: deleteCampaignTemplate
+      summary: Deletes an existing campaign template
+      tags: [ Campaign Templates ]
+      parameters:
+        - $ref: "#/components/parameters/templateId"
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_ADMIN_MANAGE ]
+      responses:
+        '200':
+          $ref: "#/components/responses/CampaignTemplateResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/v1/governance/campaigns/templates/{id}/start:
+    post:
+      operationId: startCampaignTemplate
+      summary: Starts a campaign based on a template
+      tags: [ Campaign Templates ]
+      parameters:
+        - $ref: "#/components/parameters/templateId"
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_ADMIN_MANAGE ]
+      responses:
+        '200':
+          $ref: "#/components/responses/CampaignResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/v1/governance/campaigns/templates/{id}/schedule:
+    post:
+      operationId: scheduleCampaignTemplate
+      summary: Schedules a campaign template
+      tags: [ Campaign Templates ]
+      parameters:
+        - $ref: "#/components/parameters/templateId"
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_ADMIN_MANAGE ]
+      responses:
+        '200':
+          $ref: "#/components/responses/CampaignTemplateResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/v1/governance/campaigns/templates/{id}/resources:
+    get:
+      operationId: getCampaignTemplateResources
+      summary: Returns resources associated with the template
+      tags: [ Campaign Templates ]
+      parameters:
+        - $ref: "#/components/parameters/templateId"
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_ADMIN_READ ]
+      responses:
+        '200':
+          $ref: "#/components/responses/ResourceProfilesResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+    post:
+      operationId: linkResourcesToCampaignTemplate
+      summary: Links resources with the template
+      tags: [ Campaign Templates ]
+      parameters:
+        - $ref: "#/components/parameters/templateId"
+      requestBody:
+        $ref: '#/components/requestBodies/ResourceProfilesRequestBody'
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_ADMIN_MANAGE ]
+      responses:
+        '200':
+          $ref: "#/components/responses/ResourceProfilesResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  # ================================================================================================================
+  # Campaign APIs.
+  # The API definitions are sorted by API Path. Pls maintain that order when adding or altering.
+  # ================================================================================================================
+  /api/v1/governance/campaigns:
+    get:
+      operationId: getCampaigns
+      summary: Returns all campaigns by search criteria
+      tags: [ Campaigns ]
+      parameters:
+        - $ref: "#/components/parameters/search"
+        - $ref: "#/components/parameters/afterString"
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/campaignSortByArray"
+        - $ref: "#/components/parameters/sortOrderArray"
+        - $ref: "#/components/parameters/campaignStatus"
+        - $ref: "#/components/parameters/reviewItemsCount"
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_ADMIN_READ ]
+      responses:
+        '200':
+          $ref: "#/components/responses/CampaignsResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/v1/governance/campaigns/me:
+    get:
+      operationId: getMyAssignedCampaigns
+      summary: Returns all campaigns by search criteria
+      tags: [ Campaigns ]
+      parameters:
+        - $ref: "#/components/parameters/search"
+        - $ref: "#/components/parameters/afterString"
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/campaignSortByArray"
+        - $ref: "#/components/parameters/sortOrderArray"
+        - $ref: "#/components/parameters/campaignStatus"
+        - $ref: "#/components/parameters/reviewItemsCount"
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_REVIEWER_READ ]
+      responses:
+        '200':
+          $ref: "#/components/responses/CampaignsResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/v1/governance/campaigns/{id}:
+    get:
+      operationId: getCampaign
+      summary: Retrieves a campaign
+      tags: [ Campaigns ]
+      parameters:
+        - $ref: "#/components/parameters/campaignId2"
+        - $ref: "#/components/parameters/reviewCount"
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_ADMIN_READ ]
+      responses:
+        '200':
+          $ref: "#/components/responses/CampaignResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/v1/governance/campaigns/{id}/my:
+    get:
+      operationId: getCampaignForCurrentUser
+      summary: Retrieves a campaign information where the current user is one of the reviewers
+      tags: [ Campaigns ]
+      parameters:
+        - $ref: "#/components/parameters/campaignId2"
+        - $ref: "#/components/parameters/provideCampaignSummary"
+        - $ref: "#/components/parameters/reviewCount"
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_REVIEWER_READ ]
+      responses:
+        '200':
+          $ref: "#/components/responses/CampaignResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/v1/governance/campaigns/{campaignId}/my/users/{userId}/resources/{resId}/access-details:
+    get:
+      operationId: getAccessDetails
+      summary: Return the user's access details of the provided resource
+      tags: [ Campaigns ]
+      parameters:
+        - $ref: "#/components/parameters/campaignId"
+        - $ref: "#/components/parameters/userId2"
+        - $ref: "#/components/parameters/resId"
+      security:
+        - ApiKey: [ ]
+        - OAuth2: [ GOVERNANCE_REVIEWER_READ ]
+      responses:
+        '200':
+          $ref: "#/components/responses/AccessDetailsResponse"
+
+  /api/v1/governance/campaigns/{campaignId}/resources:
+    get:
+      operationId: getCampaignResources
+      summary: Returns resources associated with the campaign
+      tags: [ Campaigns ]
+      parameters:
+        - $ref: "#/components/parameters/campaignId"
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_ADMIN_READ ]
+      responses:
+        '200':
+          $ref: "#/components/responses/ResourceProfilesResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/v1/governance/campaigns/{campaignId}/summary:
+    get:
+      operationId: getCampaignSummary
+      summary: Retruns campaign summary
+      tags: [ Campaigns ]
+      parameters:
+        - $ref: "#/components/parameters/campaignId"
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_ADMIN_READ ]
+      responses:
+        '200':
+          $ref: "#/components/responses/CampaignSummaryResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/v1/governance/campaigns/{id}/complete:
+    post:
+      operationId: completeCampaign
+      summary: Completes a campaign
+      tags: [ Campaigns ]
+      parameters:
+        - $ref: "#/components/parameters/campaignId2"
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_ADMIN_MANAGE ]
+      responses:
+        '200':
+          $ref: "#/components/responses/CampaignResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/v1/governance/campaigns/state/{state}:
+    get:
+      operationId: getCampaignsByState
+      summary: Returns all campaigns by search criteria
+      tags: [ Campaigns ]
+      parameters:
+        - $ref: "#/components/parameters/state"
+        - $ref: "#/components/parameters/search"
+        - $ref: "#/components/parameters/afterInteger"
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/campaignSortByArray"
+        - $ref: "#/components/parameters/sortOrderArray"
+        - $ref: "#/components/parameters/reviewItemsCount"
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_ADMIN_READ ]
+      responses:
+        '200':
+          $ref: "#/components/responses/CampaignsResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/v1/governance/campaigns/{id}/resources/me:
+    get:
+      operationId: getCampaignResourcesAssignedToMeForReview
+      summary: Returns all campaign resources assigned to current user
+      tags: [ Campaigns ]
+      parameters:
+        - $ref: "#/components/parameters/campaignId2"
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_REVIEWER_READ ]
+      responses:
+        '200':
+          $ref: "#/components/responses/ResourceProfilesResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  # ================================================================================================================
+  # Campaign Review Items APIs.
+  # The API definitions are sorted by API Path. Pls maintain that order when adding or altering.
+  # ================================================================================================================
+  /api/v1/governance/campaigns/{campaignId}/reviewItems:
+    get:
+      operationId: getReviewItems
+      summary: Returns all review items for a campaign
+      tags: [ Campaign Review ]
+      parameters:
+        - $ref: "#/components/parameters/campaignId"
+        - $ref: "#/components/parameters/principalNamePrefix"
+        - $ref: "#/components/parameters/reviewerNamePrefix"
+        - $ref: "#/components/parameters/resourceId"
+        - $ref: "#/components/parameters/reviewerId"
+        - $ref: "#/components/parameters/decision"
+        - $ref: "#/components/parameters/remediationStatus"
+        - $ref: "#/components/parameters/afterInteger"
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/reviewItemSortByArray"
+        - $ref: "#/components/parameters/sortOrderArray"
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_ADMIN_READ ]
+      responses:
+        '200':
+          $ref: "#/components/responses/CampaignReviewItemsResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/v1/governance/campaigns/{campaignId}/reviewItems/{reviewItemId}/history:
+    get:
+      operationId: getReviewItemHistory
+      summary: Returns the history of records related to given review item
+      tags: [ Campaign Review ]
+      parameters:
+        - $ref: "#/components/parameters/campaignId"
+        - $ref: "#/components/parameters/reviewItemId"
+        - $ref: "#/components/parameters/afterInteger"
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/reviewItemHistorySortByArray"
+        - $ref: "#/components/parameters/sortOrderArray"
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_ADMIN_READ ]
+      responses:
+        '200':
+          $ref: "#/components/responses/CampaignReviewItemHistoryResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/v1/governance/campaigns/{campaignId}/reviewItems/delegate:
+    post:
+      operationId: delegateReviewItems
+      summary: Delegates review items
+      tags: [ Campaign Review ]
+      parameters:
+        - $ref: "#/components/parameters/campaignId"
+      requestBody:
+        $ref: '#/components/requestBodies/ReviewItemsDelegationRequestBody'
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_ADMIN_MANAGE ]
+      responses:
+        '200':
+          $ref: "#/components/responses/CampaignReviewItemsResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/v1/governance/campaigns/{campaignId}/reviewItems/me:
+    get:
+      operationId: getReviewItemsOfCurrentUser
+      summary: Returns all review items for a campaign which are assigned to the current user
+      tags: [ Campaign Review ]
+      parameters:
+        - $ref: "#/components/parameters/campaignId"
+        - $ref: "#/components/parameters/principalNamePrefix"
+        - $ref: "#/components/parameters/reviewerNamePrefix"
+        - $ref: "#/components/parameters/resourceId"
+        - $ref: "#/components/parameters/decision"
+        - $ref: "#/components/parameters/afterInteger"
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/reviewItemSortByArray"
+        - $ref: "#/components/parameters/sortOrderArray"
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_REVIEWER_READ ]
+      responses:
+        '200':
+          $ref: "#/components/responses/CampaignReviewItemsResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+    put:
+      operationId: updateReviewDecisions
+      summary: Updates review decisions for a number of items
+      tags: [ Campaign Review ]
+      parameters:
+        - $ref: "#/components/parameters/campaignId"
+      requestBody:
+        $ref: '#/components/requestBodies/ReviewItemDecisionsRequestBody'
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_REVIEWER_MANAGE ]
+      responses:
+        '200':
+          $ref: "#/components/responses/CampaignReviewItemsResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/v1/governance/campaigns/{campaignId}/reviewItems/{reviewItemId}/history/me:
+    get:
+      operationId: getMyReviewItemHistory
+      summary: Returns the history of records related to given review item
+      tags: [ Campaign Review ]
+      parameters:
+        - $ref: "#/components/parameters/campaignId"
+        - $ref: "#/components/parameters/reviewItemId"
+        - $ref: "#/components/parameters/afterInteger"
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/reviewItemHistorySortByArray"
+        - $ref: "#/components/parameters/sortOrderArray"
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_REVIEWER_MANAGE ]
+      responses:
+        '200':
+          $ref: "#/components/responses/CampaignReviewItemHistoryResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/v1/governance/campaigns/{campaignId}/reviewItems/delegate/my:
+    post:
+      operationId: delegateMyReviewItems
+      summary: Delegates review items assigned to currently logged in user as a reviewer
+      tags: [ Campaign Review ]
+      parameters:
+        - $ref: "#/components/parameters/campaignId"
+      requestBody:
+        $ref: '#/components/requestBodies/ReviewItemsDelegationRequestBody'
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_REVIEWER_MANAGE ]
+      responses:
+        '200':
+          $ref: "#/components/responses/CampaignReviewItemsResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/v1/governance/expression/preview/reviewer:
+    post:
+      operationId: previewReviewerExpression
+      summary: Previews the result of applying a reviewer EL expression to a reviewer
+      tags: [ Campaign Templates ]
+      requestBody:
+        $ref: '#/components/requestBodies/PreviewReviewerExpressionRequestBody'
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_ADMIN_MANAGE ]
+      responses:
+        '200':
+          $ref: '#/components/responses/PreviewReviewerExpressionResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/v1/governance/expression/preview/user:
+    post:
+      operationId: previewUserExpression
+      summary: Previews the result of applying a user EL expression to a user
+      tags: [ Campaign Templates ]
+      requestBody:
+        $ref: '#/components/requestBodies/PreviewUserExpressionRequestBody'
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_ADMIN_MANAGE ]
+      responses:
+        '200':
+          $ref: '#/components/responses/PreviewUserExpressionResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/v1/governance/expression/validate/reviewer:
+    post:
+      operationId: validateReviewerExpression
+      summary: Validates a reviewer EL expression
+      tags: [ Campaign Templates ]
+      requestBody:
+        $ref: '#/components/requestBodies/ValidateReviewerExpressionRequestBody'
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_ADMIN_MANAGE ]
+      responses:
+        '204':
+          description: Reviewer EL expression is valid
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/v1/governance/expression/validate/user:
+    post:
+      operationId: validateUserExpression
+      summary: Validates a user EL expression
+      tags: [ Campaign Templates ]
+      requestBody:
+        $ref: '#/components/requestBodies/ValidateUserExpressionRequestBody'
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_ADMIN_MANAGE ]
+      responses:
+        '204':
+          description: User EL expression is valid
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  # ================================================================================================================
+  # Governance User's API.
+  # The API definitions are sorted by API Path. Pls maintain that order when adding or altering.
+  # ================================================================================================================
+  /api/v1/governance/users:
+    get:
+      operationId: searchUsers
+      summary: Returns small amount of user profile data by search criteria
+      tags: [ Certification ]
+      parameters:
+        - $ref: "#/components/parameters/q"
+        - $ref: "#/components/parameters/limit"
+      security:
+        - ApiKey: [ admin ]
+        - OAuth2: [ GOVERNANCE_USERS_READ ]
+      responses:
+        '200':
+          $ref: "#/components/responses/PrincipalProfileSourcesResponse"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/v1/governance/users/{id}:
+    get:
+      operationId: getUser
+      summary: Return user detail profile
+      tags: [ Certification ]
+      parameters:
+        - $ref: "#/components/parameters/userId"
+      security:
+        - ApiKey: [ ]
+        - OAuth2: [ GOVERNANCE_USERS_READ ]
+      responses:
+        '200':
+          $ref: "#/components/responses/PrincipalProfileSourceResponse"
+
+components:
+
+  parameters:
+
+    # ================================================================================================================
+    # Declare all path params in alphabetical order.
+    # ================================================================================================================
+    templateId:
+      name: id
+      in: path
+      description: The id of the campaign template
+      required: true
+      schema:
+        type: string
+
+    campaignTemplateStatus:
+      name: status
+      in: path
+      description: The status of the campaign template
+      required: true
+      schema:
+        $ref: "#/components/schemas/CampaignTemplateStatus"
+
+    campaignTemplateStatuses:
+      name: status
+      in: query
+      description: The statuses of the campaign template
+      required: false
+      schema:
+        type: array
+        items:
+          $ref: "#/components/schemas/CampaignTemplateStatus"
+
+    campaignId:
+      name: campaignId
+      in: path
+      description: The id of the campaign
+      required: true
+      schema:
+        type: string
+
+    decision:
+      name: decision
+      in: query
+      required: false
+      schema:
+        type: array
+        description: Ampersand separated campaign review decision values
+        items:
+          $ref: "#/components/schemas/CampaignReviewDecision"
+
+    remediationStatus:
+      name: remediationStatus
+      in: query
+      required: false
+      schema:
+        type: array
+        description: Ampersand separated campaign review remediation status values
+        example: remediationStatus=SUCCESS&remediationStatus=NONE
+        items:
+          $ref: "#/components/schemas/RemediationStatus"
+
+    resId:
+      name: resId
+      in: path
+      description: The resource id
+      required: true
+      schema:
+        type: string
+
+    reviewItemId:
+      name: reviewItemId
+      in: path
+      description: The id of the review item
+      required: true
+      schema:
+        type: string
+
+    state:
+      name: state
+      description: The status of a campaign
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/CampaignStatus"
+
+    userId:
+      name: id
+      in: path
+      description: The id of user
+      required: true
+      schema:
+        type: string
+
+    userId2:
+      name: userId
+      in: path
+      description: The id of user
+      required: true
+      schema:
+        type: string
+
+    # ================================================================================================================
+    # Declare all query params in alphabetical order.
+    # ================================================================================================================
+    afterInteger:
+      name: after
+      description: The page ID of the previous search result. Will assist in matching the next matching set.
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+
+    afterString:
+      name: after
+      description: The page ID of the previous search result. Will assist in matching the next matching set.
+      in: query
+      required: false
+      schema:
+        type: string
+
+    campaignStatus:
+      name: campaignStatus
+      description: The status of a campaign
+      in: query
+      required: false
+      schema:
+        $ref: "#/components/schemas/CampaignStatus"
+
+    limit:
+      name: limit
+      description: The max number of records that will be returned in a given result. Default is 200.
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 300
+
+    principalNamePrefix:
+      name: principalNamePrefix
+      description: The prefix used to match the principal's first or last names
+      in: query
+      required: false
+      schema:
+        type: string
+
+    provideCampaignSummary:
+      name: provideCampaignSummary
+      in: query
+      description: Whether or not to return campaign summary
+      required: false
+      deprecated: true
+      schema:
+        type: boolean
+        default: false
+
+    q:
+      name: q
+      description: A search string that will prefix match against the user profile first and last names
+      in: query
+      required: false
+      schema:
+        type: string
+
+    reviewCount:
+      name: reviewCount
+      in: query
+      description: Whether or not to return review item counts
+      required: false
+      schema:
+        type: boolean
+        default: false
+
+    reviewerNamePrefix:
+      name: reviewerNamePrefix
+      description: The prefix used to match the reviewer's first or last names
+      in: query
+      required: false
+      schema:
+        type: string
+
+    search:
+      name: search
+      description: A search string that will matches against the campaign template names
+      in: query
+      required: false
+      schema:
+        type: string
+
+    sortBy:
+      name: sortBy
+      description: The field to sort the responses by. The default sort field is 'id'.
+      in: query
+      required: false
+      schema:
+        type: string
+        default: "id"
+
+    templateSortByArray:
+      name: sortBy
+      description: The field to sort the responses by. The default sort is 'id'.
+      in: query
+      required: false
+      schema:
+        type: array
+        uniqueItems: false
+        items:
+          $ref: "#/components/schemas/TemplateSortField"
+        default: [ID]
+
+    campaignSortByArray:
+      name: sortBy
+      description: The field to sort the responses by. The default sort is 'id'.
+      in: query
+      required: false
+      schema:
+        type: array
+        uniqueItems: false
+        items:
+          $ref: "#/components/schemas/CampaignSortField"
+        default: [ID]
+
+    reviewItemSortByArray:
+      name: sortBy
+      description: The field to sort the responses by. The default sort is 'id'.
+      in: query
+      required: false
+      schema:
+        type: array
+        uniqueItems: false
+        items:
+          $ref: "#/components/schemas/ReviewItemSortField"
+        default: [ID]
+
+    reviewItemHistorySortByArray:
+      name: sortBy
+      description: The field to sort the responses by. The default sort is 'id'.
+      in: query
+      required: false
+      schema:
+        type: array
+        uniqueItems: false
+        items:
+          $ref: "#/components/schemas/ReviewItemHistorySortField"
+        default: [ID]
+
+    sortOrder:
+      name: sortOrder
+      description: The required sort order. Default is "ASC".
+      in: query
+      required: false
+      schema:
+        $ref: "#/components/schemas/SortOrder"
+
+    sortOrderArray:
+      name: sortOrder
+      description: The required sort order. Default is ["ASC"].
+      in: query
+      required: false
+      schema:
+        type: array
+        uniqueItems: false
+        items:
+          $ref: "#/components/schemas/SortOrder"
+        default: [ASC]
+
+    resourceId:
+      name: resourceId
+      in: query
+      required: false
+      schema:
+        type: string
+
+    reviewerId:
+      name: reviewerId
+      in: query
+      required: false
+      schema:
+        type: string
+
+    reviewItemsCount:
+      name: reviewItemsCount
+      description: Whether to return review item counts.
+      in: query
+      required: false
+      schema:
+        type: boolean
+        default: false
+
+    campaignId2:
+      name: id
+      in: path
+      description: The id of the campaign
+      required: true
+      schema:
+        type: string
+
+  requestBodies:
+
+    # ================================================================================================================
+    # Declare of request body components in alphabetical order.
+    # ================================================================================================================
+    CampaignTemplateRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CampaignTemplateRequest'
+
+    PreviewReviewerExpressionRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PreviewReviewerExpression'
+
+    PreviewUserExpressionRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PreviewUserExpression'
+
+    RemediationSettingsRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RemediationSettings'
+
+    ResourceProfilesRequestBody:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ResourceProfile'
+
+    ReviewItemDecisionsRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ReviewItemDecisions'
+
+    ReviewItemsDelegationRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ReviewItemsDelegation'
+
+    ValidateReviewerExpressionRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserExpression'
+
+    ValidateUserExpressionRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserExpression'
+
+  responses:
+
+    # To be removed
+    DateFormatResponse:
+      description: Supported date format
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/DateFormatDetails"
+
+    # ================================================================================================================
+    # Declare all response components in alphabetical order.
+    # ================================================================================================================
+
+    AccessDetailsResponse:
+      description: Access details of a resource for a given user
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/AccessDetails"
+
+    CampaignResponse:
+      description: A Campaign
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Campaign"
+
+    CampaignsResponse:
+      description: A paged array of Campaigns
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/Campaign"
+      headers:
+        Link:
+          description: A link to the next page of responses
+          schema:
+            type: string
+
+    CampaignTemplateResponse:
+      description: A Campaign Template
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/CampaignTemplate"
+
+    CampaignTemplatesResponse:
+      description: A paged array of Campaign Template
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/CampaignTemplate"
+      headers:
+        Link:
+          description: A link to the next page of responses
+          schema:
+            type: string
+
+    CampaignReviewItemHistoryResponse:
+      description: A paged array of CampaignReviewItemHistory
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/CampaignReviewItemHistory"
+      headers:
+        Link:
+          description: A link to the next page of responses
+          schema:
+            type: string
+
+    CampaignReviewItemsResponse:
+      description: A paged array of CampaignReviewItems
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/CampaignReviewItem"
+      headers:
+        Link:
+          description: A link to the next page of responses
+          schema:
+            type: string
+
+    CampaignSummaryResponse:
+      description: Campaign summary
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/CampaignSummary"
+
+    ErrorResponse:
+      description: |
+        400 - When request validation fails <br>
+        401 - When the user is not authenticated <br>
+        403 - When the user is not authorized <br>
+        429 - When rate limits are exceeded <br>
+        500 - When an internal server error is encountred <br>
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    PreviewReviewerExpressionResponse:
+      description: Information about the reviewer referenced by the expression
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/PrincipalProfile"
+
+    PreviewUserExpressionResponse:
+      description: Whether the user is referenced by the expression
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/IsUserReferenced"
+
+    PrincipalProfileSourceResponse:
+      description: A principal profile from monolith
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/PrincipalProfileSource"
+
+    PrincipalProfileSourcesResponse:
+      description: A paged array of resources
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/PrincipalProfileSource"
+
+    ResourceProfilesResponse:
+      description: A paged array of resources
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/ResourceProfile"
+      headers:
+        Link:
+          description: A link to the next page of responses
+          schema:
+            type: string
+
+  schemas:
+
+    # ================================================================================================================
+    # Declare all enums in alphabetical order.
+    # ================================================================================================================
+
+    # To be removed
+    DateFormat:
+      enum:
+        - EPOCH
+        - ISO8601
+      default: EPOCH
+
+    ApprovedRemediationAction:
+      enum:
+        - NO_ACTION
+      default: NO_ACTION
+
+    AssignmentType:
+      enum:
+        - INDIVIDUAL
+        - GROUP
+        - GROUP_RULE
+        - APP_GROUP
+
+    CampaignStatus:
+      enum:
+        - SNAPSHOT
+        - READY
+        - COMPLETED
+        - DELETED
+
+    CampaignReviewDecision:
+      enum:
+        - UNREVIEWED
+        - APPROVE
+        - REVOKE
+        - DELEGATE
+
+    CampaignTemplateStatus:
+      enum:
+        - DRAFT
+        - SCHEDULED
+        - STARTING
+        - ACTIVE
+        - ERROR
+        - DELETED
+
+    EventName:
+      enum:
+        - USER_ASSIGN
+        - USER_REASSIGN
+        - USER_DECISION
+
+    NoResponseRemediationAction:
+      enum:
+        - NO_ACTION
+        - DENY
+      default: NO_ACTION
+
+    PrincipalProfileStatus:
+      enum:
+        - ACTIVE
+        - INACTIVE
+
+    PrincipalProfileUserStatus:
+      enum:
+        - STAGED
+        - PROVISIONED
+        - ACTIVE
+        - RECOVERY
+        - PASSWORD_EXPIRED
+        - LOCKED_OUT
+        - DEPROVISIONED
+        - SUSPENDED
+        - UNKNOWN
+
+    RemediationStatus:
+      enum:
+        - NONE
+        - OPEN
+        - ERROR
+        - SUCCESS
+        - MANUAL
+
+    ResourceProfileStatus:
+      enum:
+        - ACTIVE
+        - INACTIVE
+        - DELETED
+
+    ResourceType:
+      enum:
+        - GROUP
+        - APP
+
+    RevokedRemediationAction:
+      enum:
+        - NO_ACTION
+        - DENY
+      default: NO_ACTION
+
+    SortOrder:
+      default: ASC
+      enum:
+        - ASC
+        - DESC
+
+    TemplateSortField:
+      default: id
+      enum:
+        - id
+        - name
+        - startDate
+        - endDate
+        - status
+
+    CampaignSortField:
+      default: id
+      enum:
+        - id
+        - startTime
+        - endTime
+        - name   # backwards compatibility
+        - template.name
+
+    ReviewItemSortField:
+      default: id
+      enum:
+        - id
+        - resourceId
+        - decision
+        - remediationStatus
+        - principal.firstName
+        - principal.lastName
+        - principal.email
+        - reviewer.firstName
+        - reviewer.lastName
+        - reviewer.email
+
+    ReviewItemHistorySortField:
+      default: id
+      enum:
+        - id
+        - eventDate
+
+    # ================================================================================================================
+    # Declare all schema objects in alphabetical order.
+    # ================================================================================================================
+
+    # To be removed
+    DateFormatDetails:
+      properties:
+        supportDateFormat:
+          $ref: "#/components/schemas/DateFormat"
+
+    AccessDetails:
+      properties:
+        lastAppAccessDate:
+          description: The last time the user accessed the given app. Note that the field will be null, if data could not be retrieved
+          type: string
+          format: date-time
+        lastAppAccessReviewDate:
+          description: The last time the user's access to the given app was reviewed. Note that the field will be null, if access was never reviewed
+          type: string
+          format: date-time
+        lastReviewDecision:
+          description: The last reviewe decision for the user's access to the given app. Note that the field will be null, if access was never reviewed
+          $ref: "#/components/schemas/CampaignReviewDecision"
+
+    BasePrincipalProfile:
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        excludedUserProfiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/PrincipalProfile'
+        status:
+          $ref: "#/components/schemas/PrincipalProfileStatus"
+        userStatus:
+          $ref: "#/components/schemas/PrincipalProfileUserStatus"
+
+    Campaign:
+      allOf:
+        - $ref: '#/components/schemas/Creatable'
+      properties:
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        status:
+          $ref: '#/components/schemas/CampaignStatus'
+        certificationJobId:
+          type: string
+        template:
+          $ref: '#/components/schemas/CampaignTemplate'
+        campaignSummary:
+          $ref: '#/components/schemas/CampaignSummary'
+        reviewItemsCount:
+          $ref: '#/components/schemas/CampaignReviewItemsCount'
+
+    CampaignReviewItemsCount:
+      properties:
+        total:
+          type: integer
+        pending:
+          type: integer
+
+    CampaignSummary:
+      properties:
+        approved:
+          type: integer
+        delegated:
+          type: integer
+        revoked:
+          type: integer
+        outstanding:
+          type: integer
+        pending:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int32
+
+    CampaignTemplate:
+      allOf:
+        - $ref: '#/components/schemas/Creatable'
+      properties:
+        reviewerProfile:
+          $ref: '#/components/schemas/PrincipalProfile'
+        excludedUserProfiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/PrincipalProfile'
+        status:
+          $ref: '#/components/schemas/CampaignTemplateStatus'
+        _links:
+          additionalProperties:
+            $ref: '#/components/schemas/Link'
+        #TODO Remove all fields after this and extend CampaignTemplateRequest
+        name:
+          type: string
+        description:
+          type: string
+        userScopeExpression:
+          type: string
+        reviewerId:
+          type: string
+        dynamicReviewer:
+          $ref: '#/components/schemas/DynamicReviewer'
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        excludedUserIds:
+          type: array
+          items:
+            type: string
+        notificationSettings:
+          $ref: '#/components/schemas/NotificationSettings'
+        remediationSettings:
+          $ref: '#/components/schemas/RemediationSettings'
+
+    CampaignTemplateRequest:
+      allOf:
+        - $ref: '#/components/schemas/Creatable'  #TODO Remove
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        userScopeExpression:
+          type: string
+        reviewerId:
+          type: string
+        dynamicReviewer:
+          $ref: '#/components/schemas/DynamicReviewer'
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        excludedUserIds:
+          type: array
+          items:
+            type: string
+        notificationSettings:
+          $ref: '#/components/schemas/NotificationSettings'
+        remediationSettings:
+          $ref: '#/components/schemas/RemediationSettings'
+        #TODO Remove all fields after this
+        reviewerProfile:
+          $ref: '#/components/schemas/PrincipalProfile'
+        excludedUserProfiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/PrincipalProfile'
+        status:
+          $ref: '#/components/schemas/CampaignTemplateStatus'
+        _links:
+          additionalProperties:
+            $ref: '#/components/schemas/Link'
+
+    CampaignReviewItem:
+      required: [ id ]
+      allOf:
+        - $ref: '#/components/schemas/Updatable'
+      properties:
+        campaignId:
+          type: string
+        resourceId:
+          type: string
+        principalProfile:
+          $ref: "#/components/schemas/PrincipalProfile"
+        reviewerProfile:
+          $ref: "#/components/schemas/PrincipalProfile"
+        assignmentType:
+          $ref: "#/components/schemas/AssignmentType"
+        remediationActionId:
+          type: string
+        decision:
+          $ref: "#/components/schemas/CampaignReviewDecision"
+        decisionDate:
+          type: string
+          format: date-time
+        campaignReviewJobId:
+          type: string
+        remediationStatus:
+          $ref: "#/components/schemas/RemediationStatus"
+        remediationDate:
+          type: string
+          format: date-time
+        note:
+          $ref: "#/components/schemas/ReviewItemNote"
+
+    CampaignReviewItemHistory:
+      required:
+        - id
+        - reviewItemId
+        - eventName
+        - actorProfile
+        - changedTo
+        - eventDate
+      allOf:
+        - $ref: '#/components/schemas/Creatable'
+      properties:
+        reviewItemId:
+          type: string
+        eventName:
+          $ref: "#/components/schemas/EventName"
+        actorProfile:
+          $ref: "#/components/schemas/PrincipalProfile"
+        changedTo:
+          type: string
+        targetReviewerProfile:
+          nullable: true
+          $ref: "#/components/schemas/PrincipalProfile"
+        eventDate:
+          type: string
+          format: date-time
+        note:
+          nullable: true
+          $ref: "#/components/schemas/ReviewItemNote"
+
+    Creatable:
+      allOf:
+        - $ref: '#/components/schemas/Updatable'
+        - properties:
+            createdDate:
+              type: string
+              format: date-time
+              readOnly: true
+            createdBy:
+              type: string
+              readOnly: true
+
+    DynamicReviewer:
+      properties:
+        reviewerExpression:
+          type: string
+        fallBackReviewerId:
+          type: string
+        fallBackReviewerProfile:
+          $ref: '#/components/schemas/PrincipalProfile'
+
+    ErrorResponse:
+      properties:
+        errorCode:
+          type: string
+          description: An error code unique to the error
+        errorSummary:
+          type: string
+          description: An error code description, detailing the error
+        errorLink:
+          type: string
+          description: An indicator where to look out to troubleshoot the error
+        errorId:
+          type: string
+          description: The unique identifier of this error
+        errorCauses:
+          type: array
+          description: An optional array of string values, that talks about various reasons for the error
+          items:
+            $ref: '#/components/schemas/ErrorCause'
+
+    ErrorCause:
+      properties:
+        errorSummary:
+          type: string
+          description: An error code description, detailing the error
+
+    IsUserReferenced:
+      properties:
+        isUserReferenced:
+          type: boolean
+
+    Link:
+      type: object
+      properties:
+        name:
+          type: string
+        rel:
+          type: string
+        href:
+          type: string
+        type:
+          type: string
+        method:
+          type: string
+          deprecated: true
+        templated:
+          type: boolean
+        hints:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+        title:
+          type: string
+
+    NotificationSettings:
+      properties:
+        onReviewsAssigned:
+          type: boolean
+        onCampaignEnd:
+          type: boolean
+        beforeCampaignCloseInSecs:
+          type: array
+          items:
+            type: integer
+
+    PreviewReviewerExpression:
+      properties:
+        campaignTemplateId:
+          type: string
+        expression:
+          type: string
+        userId:
+          type: string
+
+    PreviewUserExpression:
+      properties:
+        campaignTemplateId:
+          type: string
+        expression:
+          type: string
+        userId:
+          type: string
+
+    PrincipalProfile:
+      allOf:
+        - $ref: '#/components/schemas/BasePrincipalProfile'
+
+    PrincipalProfileSource:
+      allOf:
+        - $ref: '#/components/schemas/BasePrincipalProfile'
+      properties:
+        jobTitle:
+          type: string
+        costCenter:
+          type: string
+        orgName:
+          type: string
+        deptName:
+          type: string
+        supervisor:
+          type: string
+
+    RemediationSettings:
+      properties:
+        accessApproved:
+          $ref: "#/components/schemas/ApprovedRemediationAction"
+        accessRevoked:
+          $ref: "#/components/schemas/RevokedRemediationAction"
+        noResponse:
+          $ref: "#/components/schemas/NoResponseRemediationAction"
+
+    ResourceProfile:
+      properties:
+        name:
+          type: string
+        globalName:
+          type: string
+        resourceId:
+          type: string
+        resourceType:
+          $ref: "#/components/schemas/ResourceType"
+        status:
+          $ref: "#/components/schemas/ResourceProfileStatus"
+
+    ReviewItemDecision:
+      properties:
+        reviewItemId:
+          type: string
+        decision:
+          $ref:  "#/components/schemas/CampaignReviewDecision"
+
+    ReviewItemDecisions:
+      properties:
+        decisions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReviewItemDecision"
+          minItems: 1
+        note:
+          type: string
+
+    ReviewItemsDelegation:
+      properties:
+        reviewerId:
+          type: string
+        reviewItemIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        note:
+          type: string
+          description: Optional note to justify the reassign decision for the the specified review item(s)
+
+    ReviewItemNote:
+      properties:
+        id:
+          type: string
+        note:
+          type: string
+
+    Updatable:
+      properties:
+        id:
+          type: string
+        lastUpdate:
+          type: string
+          format: date-time
+          readOnly: true
+        lastUpdatedBy:
+          type: string
+          readOnly: true
+
+    UserExpression:
+      properties:
+        expression:
+          type: string
+
+  securitySchemes:
+    # ================================================================================================================
+    # Declare all security schemes in alphabetical order.
+    # ================================================================================================================
+    ApiKey:
+      type: apiKey
+      name: Authorization
+      in: header
+      description: 'Prefix the value with \"SSWS\" to indicate the custom authorization type'
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://rain.okta1.com/oauth2/v1/authorize
+          tokenUrl: https://rain.okta1.com/oauth2/v1/token
+          scopes:
+            GOVERNANCE_REVIEWER_READ: Grants read access to reviewer
+            GOVERNANCE_REVIEWER_MANAGE: Grants manage access to reviewer
+            GOVERNANCE_ADMIN_READ: Grants read access to admin
+            GOVERNANCE_ADMIN_MANAGE: Grants manage access to admin
+            GOVERNANCE_USERS_READ: Grants users read access to reviewer app

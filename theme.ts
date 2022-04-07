@@ -1,10 +1,11 @@
 import { lighten, darken, readableColor } from 'polished';
+import * as Tokens from "@okta/odyssey-design-tokens";
 
 export const theme = {
   // spacing: {
-  //   unit: 5,
-  //   sectionHorizontal: ({ spacing }) => spacing.unit * 8,
-  //   sectionVertical: ({ spacing }) => spacing.unit * 8,
+    // unit: Tokens.SpaceScale1,
+    // sectionHorizontal: ({ spacing }) => Tokens.SpaceScale4,
+    // sectionVertical: ({ spacing }) => Tokens.SpaceScale4,
   // },
   // breakpoints: {
   //   xs: 0,
@@ -15,7 +16,7 @@ export const theme = {
   colors: {
     // tonalOffset: 0.2,
     primary: {
-      main: '#00297A',
+      main: '#00297a',
       // light: ({ colors }) => lighten(colors.tonalOffset, colors.primary.main),
       // dark: ({ colors }) => darken(colors.tonalOffset, colors.primary.main),
       // contrastText: ({ colors }) => readableColor(colors.primary.main),
@@ -45,13 +46,13 @@ export const theme = {
     //   contrastText: ({ colors }) => readableColor(colors.info.main),
     // },
     text: {
-      primary: '#1d1d21',
+      primary: Tokens.ColorTextBody,
       // secondary: '#4e566d',
     },
-    // border: {
-    //   dark: 'rgba(0,0,0, 0.15)',
-    //   light: '#ffffff',
-    // },
+    border: {
+      dark: Tokens.ColorBorderPrimaryDark,
+      light: '#fff',
+    },
     // responses: {
     //   success: {
     //     color: ({ colors }) => colors.success.main,
@@ -93,7 +94,7 @@ export const theme = {
   },
 
   sidebar: {
-    backgroundColor: '#F5F5F6',
+    backgroundColor: Tokens.ColorBackgroundBase,
     width: '260px',
   },
   // tocPanel: {
@@ -101,41 +102,45 @@ export const theme = {
   // },
 
   typography: {
-    fontSize: '16px',
-    lineHeight: '1.5em',
-    fontWeightRegular: '400',
-    fontWeightBold: '600',
+    fontSize: Tokens.FontSizeBase,
+    lineHeight: Tokens.FontLineHeightUi,
+    fontWeightRegular: Tokens.FontWeightNormal,
+    fontWeightBold: Tokens.FontWeightBold,
     fontWeightLight: '300',
-    fontFamily: '"Source Sans Pro", sans-serif',
+    fontFamily: Tokens.FontFamilyBase,
     headings: {
       fontFamily: '"Source Sans Pro", sans-serif',
-      fontWeight: '600',
+      fontWeight: Tokens.FontWeightNormal,
     },
-    // heading1: {
-    //   fontSize: '1.85714em',
-    //   fontWeight: '600',
-    //   fontFamily: ({ typography }) => typography.headings.fontFamily,
-    //   lineHeight: ({ typography }) => typography.lineHeight,
-    //   color: ({ colors }) => colors.primary.main,
-    //   capitalize: true,
-    // },
-    // heading2: {
-    //   fontSize: '1.57143em',
-    //   fontWeight: '600',
-    //   color: ({ colors }) => colors.text.primary,
-    //   fontFamily: ({ typography }) => typography.headings.fontFamily,
-    //   lineHeight: ({ typography }) => typography.lineHeight,
-    //   capitalize: false,
-    // },
-    // heading3: {
-    //   fontSize: '1.27em',
+    heading1: {
+      fontSize: Tokens.FontSizeHeading1,
+      lineHeight: Tokens.FontLineHeightHeading1,
+      // fontWeight: '600',
+      // fontFamily: ({ typography }) => typography.headings.fontFamily,
+      // lineHeight: ({ typography }) => typography.lineHeight,
+      // color: ({ colors }) => colors.primary.main,
+      // capitalize: true,
+    },
+    heading2: {
+      fontSize: Tokens.FontSizeHeading2,
+      lineHeight: Tokens.FontLineHeightHeading2,
     //   fontWeight: '600',
     //   color: ({ colors }) => colors.text.primary,
     //   fontFamily: ({ typography }) => typography.headings.fontFamily,
     //   lineHeight: ({ typography }) => typography.lineHeight,
     //   capitalize: false,
-    // },
-    // heading4: {
+    },
+    heading3: {
+      fontSize: Tokens.FontSizeHeading3,
+      lineHeight: Tokens.FontLineHeightHeading3,
+    //   color: ({ colors }) => colors.text.primary,
+    //   fontFamily: ({ typography }) => typography.headings.fontFamily,
+    //   lineHeight: ({ typography }) => typography.lineHeight,
+    //   capitalize: false,
+    },
+    heading4: {
+      fontSize: Tokens.FontSizeHeading4,
+      lineHeight: Tokens.FontLineHeightHeading4,
     // // ...
     // },
     // heading5: {
@@ -143,10 +148,10 @@ export const theme = {
     // },
     // heading6: {
     // // ...
-    // },
+    },
     code: {
       fontSize: '13px',
-      fontFamily: '"Source Code Pro", sans-serif',
+      fontFamily: Tokens.FontFamilyMono,
       // fontWeight: ({ typography }) => typography.fontWeightRegular,
       color: '#e53935',
       backgroundColor: 'rgba(38, 50, 56, 0.04)',
