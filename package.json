@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "start": "redocly-portal develop -p 3000",
-    "build": "redocly-portal build",
+    "build": "echo a && redocly-portal build",
     "clean": "redocly-portal clean"
   },
   "dependencies": {
